@@ -732,6 +732,10 @@
 </div>
 
 <script>
+/* Declared up front so it's never in a Temporal Dead Zone: trySession() can call
+   initCapabilities() (which assigns these) as soon as the page loads, before the
+   script has linearly reached whatever line these were originally declared on. */
+let dbApi = null, downloadsApi = null, assetsApi = null;
 /* ---------- shared helpers ---------- */
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtDate(iso) { if (!iso) return ''; const [y,m,d] = iso.split('-'); if (!y) return iso; return `${d}/${m}/${y}`; }
@@ -880,7 +884,7 @@ async function runConfirmFlow(id) {
   const statusEl = document.getElementById('confirmStatus');
   const boxEl = document.getElementById('confirmBox');
   let db = null;
-  try { db = window.claude ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  try { db = window.claude ? await window.claude.use('db') : createLocalDb(); } catch (e) { db = createLocalDb(); }
   if (!db) { statusEl.textContent = "This confirmation link isn't available right now. Please contact reception directly."; return; }
 
   const ref = db.collection('entries').doc(id);
@@ -924,7 +928,7 @@ async function runCheckoutFlow(id) {
   const statusEl = document.getElementById('confirmStatus');
   const boxEl = document.getElementById('confirmBox');
   let db = null;
-  try { db = window.claude ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  try { db = window.claude ? await window.claude.use('db') : createLocalDb(); } catch (e) { db = createLocalDb(); }
   if (!db) { statusEl.textContent = "This checkout link isn't available right now. Please check out at the gate desk instead."; return; }
 
   const ref = db.collection('visitors').doc(id);
@@ -1017,21 +1021,123 @@ if (!confirmId && !checkoutId) {
   }
 }
 
-/* ---------- capability init ---------- */
-let dbApi = null, downloadsApi = null, assetsApi = null;
+/* ---------- standalone local database (used outside the Claude artifact runtime) ----------
+ * Mimics the same collection().doc().get/set/update/delete/add() + orderBy().onSnapshot()
+ * shape as window.claude's db capability, backed by localStorage, so none of the app code
+ * below needs to change when this page is hosted on its own (e.g. GitHub Pages). */
+function createLocalDb() {
+  const STORAGE_PREFIX = 'pfc_localdb_';
+  const listeners = {}; // collectionName -> Set of {cb, errCb, orderField, orderDir}
 
+  function readCollection(name) {
+    try { return JSON.parse(localStorage.getItem(STORAGE_PREFIX + name) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function writeCollection(name, obj) {
+    try { localStorage.setItem(STORAGE_PREFIX + name, JSON.stringify(obj)); } catch (e) { console.error(e); }
+    notify(name);
+  }
+  function notify(name) {
+    const subs = listeners[name];
+    if (!subs) return;
+    subs.forEach(sub => {
+      try {
+        const store = readCollection(name);
+        let docs = Object.keys(store).map(id => ({ id, _data: store[id] }));
+        if (sub.orderField) {
+          docs.sort((a, b) => {
+            const av = a._data[sub.orderField], bv = b._data[sub.orderField];
+            if (av === bv) return 0;
+            const cmp = av > bv ? 1 : -1;
+            return sub.orderDir === 'desc' ? -cmp : cmp;
+          });
+        }
+        const snap = { docs: docs.map(d => ({ id: d.id, data: () => ({ ...d._data }) })) };
+        sub.cb(snap);
+      } catch (e) { if (sub.errCb) sub.errCb(e); else console.error(e); }
+    });
+  }
+  function uuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  function docRef(collName, id) {
+    return {
+      id,
+      async get() {
+        const store = readCollection(collName);
+        const data = store[id];
+        return { exists: data !== undefined, data: () => ({ ...data }) };
+      },
+      async set(data) {
+        const store = readCollection(collName);
+        store[id] = { ...data };
+        writeCollection(collName, store);
+      },
+      async update(patch) {
+        const store = readCollection(collName);
+        store[id] = { ...(store[id] || {}), ...patch };
+        writeCollection(collName, store);
+      },
+      async delete() {
+        const store = readCollection(collName);
+        delete store[id];
+        writeCollection(collName, store);
+      },
+    };
+  }
+
+  function collectionRef(name) {
+    return {
+      doc(id) { return docRef(name, id); },
+      async add(data) {
+        const id = uuid();
+        const store = readCollection(name);
+        store[id] = { ...data };
+        writeCollection(name, store);
+        return docRef(name, id);
+      },
+      orderBy(field, dir) {
+        return {
+          onSnapshot(cb, errCb) {
+            if (!listeners[name]) listeners[name] = new Set();
+            const sub = { cb, errCb, orderField: field, orderDir: dir || 'asc' };
+            listeners[name].add(sub);
+            notify(name); // fire immediately with current data
+            return () => listeners[name].delete(sub); // unsubscribe fn, unused here but Firestore-compatible
+          },
+        };
+      },
+    };
+  }
+
+  return { collection: collectionRef };
+}
+
+/* ---------- standalone downloads/assets fallbacks ---------- */
+function createLocalDownloads() {
+  return {
+    async save({ filename, data }) {
+      const blob = (data instanceof Blob) ? data : new Blob([data], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    },
+  };
+}
+
+/* ---------- capability init ---------- */
 async function initCapabilities() {
   try { dbApi = window.claude ? await window.claude.use('db') : null; } catch (e) { dbApi = null; }
+  if (!dbApi) dbApi = createLocalDb(); // standalone hosting (e.g. GitHub Pages): use localStorage instead
   try { downloadsApi = window.claude ? await window.claude.use('downloads') : null; } catch (e) { downloadsApi = null; }
+  if (!downloadsApi) downloadsApi = createLocalDownloads();
   try { assetsApi = window.claude ? await window.claude.use('assets') : null; } catch (e) { assetsApi = null; }
+  // assetsApi stays null outside Claude; photo-upload calls already check `if (assetsApi)` before using it.
 
-  if (!dbApi) {
-    document.getElementById('courierMsg').textContent = 'Live saving isn\'t available in this view.';
-    document.getElementById('courierMsg').className = 'msg err';
-    document.getElementById('visitorMsg').textContent = 'Live saving isn\'t available in this view.';
-    document.getElementById('visitorMsg').className = 'msg err';
-    return;
-  }
   initCourier();
   initCourierOut();
   initVisitor();
