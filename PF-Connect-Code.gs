@@ -43,9 +43,6 @@ function doPost(e) {
     if (action === 'uploadPhoto') {
       return jsonOut(uploadPhoto(body.filename, body.mimeType, body.base64));
     }
-    if (action === 'bulkUpsert') {
-      return jsonOut(bulkUpsert(sheetName, body.records));
-    }
     return jsonOut({ error: 'Unknown action' });
   } catch (err) {
     return jsonOut({ error: String(err) });
@@ -173,54 +170,6 @@ function deleteRow(sheetName, id) {
   if (rowNum === -1) return { deleted: false };
   sh.deleteRow(rowNum);
   return { deleted: true };
-}
-
-/**
- * bulkUpsert: given an array of records (each MUST include an ID field
- * that matches the app's own record id), update the matching row if that
- * ID already exists in the sheet, otherwise append a new row. Never
- * creates a duplicate row for an ID already present. Existing cell values
- * not present in the record are preserved as-is.
- */
-function bulkUpsert(sheetName, records) {
-  var sh = getSheet(sheetName);
-  var headers = getHeaders(sh);
-  var idCol = headers.indexOf('ID');
-  var lastRow = sh.getLastRow();
-
-  var idToRowNum = {};
-  if (lastRow >= 2) {
-    var ids = sh.getRange(2, idCol + 1, lastRow - 1, 1).getValues();
-    for (var i = 0; i < ids.length; i++) {
-      var v = ids[i][0];
-      if (v !== '' && v !== null) idToRowNum[String(v)] = i + 2;
-    }
-  }
-
-  var toAppend = [];
-  var updatedCount = 0, addedCount = 0;
-
-  records.forEach(function(rec) {
-    var id = String(rec.ID);
-    if (idToRowNum[id]) {
-      var rowNum = idToRowNum[id];
-      var current = rowToObject(headers, sh.getRange(rowNum, 1, 1, headers.length).getValues()[0]);
-      var merged = Object.assign({}, current, rec);
-      var row = headers.map(function(h) { return (merged[h] !== undefined ? merged[h] : ''); });
-      sh.getRange(rowNum, 1, 1, headers.length).setValues([row]);
-      updatedCount++;
-    } else {
-      var newRow = headers.map(function(h) { return (rec[h] !== undefined ? rec[h] : ''); });
-      toAppend.push(newRow);
-      addedCount++;
-    }
-  });
-
-  if (toAppend.length) {
-    sh.getRange(sh.getLastRow() + 1, 1, toAppend.length, headers.length).setValues(toAppend);
-  }
-
-  return { updated: updatedCount, added: addedCount };
 }
 
 /* ---------- photo upload ---------- */
