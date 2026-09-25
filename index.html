@@ -1172,9 +1172,80 @@ function createLocalDownloads() {
 }
 
 /* ---------- capability init ---------- */
+  function createFirestoreDb(fb) {
+  return {
+    collection(name) {
+      const colRef = fb.collection(fb.db, name);
+
+      return {
+        doc(id) {
+          const ref = fb.doc(fb.db, name, id);
+
+          return {
+            id,
+
+            async get() {
+              const snap = await fb.getDoc(ref);
+              return {
+                exists: snap.exists(),
+                data: () => snap.data() || {}
+              };
+            },
+
+            async set(data) {
+              await fb.setDoc(ref, data);
+            },
+
+            async update(patch) {
+              await fb.updateDoc(ref, patch);
+            },
+
+            async delete() {
+              await fb.deleteDoc(ref);
+            }
+          };
+        },
+
+        async add(data) {
+          const ref = await fb.addDoc(colRef, data);
+          return {
+            id: ref.id
+          };
+        },
+
+        orderBy(field, dir) {
+          const q = fb.query(
+            colRef,
+            fb.orderBy(field, dir || 'asc')
+          );
+
+          return {
+            onSnapshot(callback, errorCallback) {
+              return fb.onSnapshot(
+                q,
+                snap => {
+                  callback({
+                    docs: snap.docs.map(d => ({
+                      id: d.id,
+                      data: () => d.data()
+                    }))
+                  });
+                },
+                errorCallback
+              );
+            }
+          };
+        }
+      };
+    }
+  };
+}
 async function initCapabilities() {
-  try { dbApi = window.claude ? await window.claude.use('db') : null; } catch (e) { dbApi = null; }
-  if (!dbApi) dbApi = createLocalDb(); // standalone hosting (e.g. GitHub Pages): use localStorage instead
+  if (window.pfFirebase && window.pfFirebase.db) {
+    dbApi = createFirestoreDb(window.pfFirebase);
+  } else {
+    dbApi = createLocalDb();
+  }
   try { downloadsApi = window.claude ? await window.claude.use('downloads') : null; } catch (e) { downloadsApi = null; }
   if (!downloadsApi) downloadsApi = createLocalDownloads();
   try { assetsApi = window.claude ? await window.claude.use('assets') : null; } catch (e) { assetsApi = null; }
