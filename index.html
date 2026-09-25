@@ -306,6 +306,34 @@
     orderBy
   };
 </script>
+  <button
+  type="button"
+  onclick="testFirebaseWrite()"
+  style="position:fixed;bottom:20px;right:20px;z-index:9999;padding:12px 18px;background:#2c5f7c;color:white;border:0;border-radius:8px;cursor:pointer;">
+  Test Firebase
+</button>
+
+<script>
+async function testFirebaseWrite() {
+  try {
+    const ref = await window.pfFirebase.addDoc(
+      window.pfFirebase.collection(
+        window.pfFirebase.db,
+        "test"
+      ),
+      {
+        message: "PF Connect Firebase test",
+        createdAt: new Date().toISOString()
+      }
+    );
+
+    alert("Firebase test successful!\nDocument ID: " + ref.id);
+  } catch (error) {
+    console.error(error);
+    alert("Firebase test failed:\n" + error.message);
+  }
+}
+</script>
 <body>
 <div class="login-overlay industrial-login" id="loginOverlay">
   <div class="industrial-split">
