@@ -264,6 +264,48 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js" defer></script>
 </head>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    addDoc,
+    onSnapshot,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyChrqeI2Nb0lWHmGj-r7-0mTXe8OaHown4",
+    authDomain: "pf-connect---portel.firebaseapp.com",
+    projectId: "pf-connect---portel",
+    storageBucket: "pf-connect---portel.firebasestorage.app",
+    messagingSenderId: "546585936367",
+    appId: "1:546585936367:web:3182ed9762a0c172ecf61a"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const firestoreDb = getFirestore(firebaseApp);
+
+  window.pfFirebase = {
+    db: firestoreDb,
+    collection,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    addDoc,
+    onSnapshot,
+    query,
+    orderBy
+  };
+</script>
 <body>
 <div class="login-overlay industrial-login" id="loginOverlay">
   <div class="industrial-split">
