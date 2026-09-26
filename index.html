@@ -1424,7 +1424,7 @@ function initCourier() {
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   });
 
- dbApi.collection('entries').onSnapshot(
+dbApi.collection('entries').orderBy('createdAt', 'asc').onSnapshot(
     (snap) => { courierEntries = snap.docs.map((d, i) => ({ id: d.id, inwardNo: i + 1, ...d.data() })); renderCourier(); },
     (err) => { console.error(err); cEls.msg.className = 'msg err'; cEls.msg.textContent = 'Connection issue — reload the page.'; }
   );
