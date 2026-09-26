@@ -1063,11 +1063,17 @@ function applySession(session) {
 function trySession() {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem('pfc_session') || 'null'); } catch (e) {}
+
   if (saved && saved.username && saved.role) {
     applySession(saved);
-    initCapabilities();
+
+    setTimeout(() => {
+      initCapabilities();
+    }, 0);
+
     return true;
   }
+
   return false;
 }
 
