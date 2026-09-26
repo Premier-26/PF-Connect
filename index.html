@@ -1286,7 +1286,7 @@ async function initCapabilities() {
   if (!downloadsApi) downloadsApi = createLocalDownloads();
   try { assetsApi = window.claude ? await window.claude.use('assets') : null; } catch (e) { assetsApi = null; }
   // assetsApi stays null outside Claude; photo-upload calls already check `if (assetsApi)` before using it.
-setTimeout(() => initCourier(), 100);
+  initCourier();
   initCourierOut();
   initVisitor();
   initVehicle();
