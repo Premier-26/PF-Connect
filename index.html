@@ -1086,9 +1086,11 @@ document.getElementById('loginForm').addEventListener('submit', (ev) => {
 });
 
 if (!confirmId && !checkoutId) {
-  if (!trySession()) {
-    document.getElementById('l-user').focus();
-  }
+  setTimeout(() => {
+    if (!trySession()) {
+      document.getElementById('l-user').focus();
+    }
+  }, 0);
 }
 
 /* ---------- standalone local database (used outside the Claude artifact runtime) ----------
