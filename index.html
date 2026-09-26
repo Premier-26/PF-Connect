@@ -539,19 +539,16 @@ async function testFirebaseWrite() {
         <div class="field"><label for="v-idnumber">ID number</label><input type="text" id="v-idnumber" placeholder="Optional"></div>
         <div class="field"><label for="v-loggedby">Logged by (you)</label><input type="text" id="v-loggedby" placeholder="Your name" required></div>
         <div class="field wide">
-          <label for="v-photo">Visitor photo</label>
-          <div class="photo-row">
-            <input type="file" id="v-photo" accept="image/*" capture="environment">
-            <img class="photo-preview" id="v-photoPreview" alt="Visitor preview">
-          </div>
-        </div>
-        <div class="field wide"><label for="v-remarks">Remarks</label><input type="text" id="v-remarks" placeholder="Optional"></div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Register visitor &amp; make greeting card</button>
-          <span id="visitorMsg" class="msg"></span>
-        </div>
-      </form>
-    </section>
+         <label>Visitor photo</label>
+<div class="photo-row">
+  <button type="button" class="btn btn-primary" id="v-openCamera">
+    📷 Open Camera
+  </button>
+
+  <img class="photo-preview" id="v-photoPreview" alt="Visitor preview">
+</div>
+
+<input type="hidden" id="v-photo">
 
     <div class="toolbar">
       <input type="search" id="visitorSearch" placeholder="Search name, company, whom to meet…">
@@ -2534,7 +2531,109 @@ function wireSheetExport() {
     exportBtn.disabled = false;
   });
 }
+// ===============================
+// Visitor Camera
+// ===============================
 
+let visitorCameraStream = null;
+
+const vOpenCamera = document.getElementById('v-openCamera');
+const vCloseCamera = document.getElementById('v-closeCamera');
+const vCapturePhoto = document.getElementById('v-capturePhoto');
+
+const visitorCameraModal = document.getElementById('visitorCameraModal');
+const visitorCameraVideo = document.getElementById('visitorCameraVideo');
+const visitorCameraCanvas = document.getElementById('visitorCameraCanvas');
+
+vOpenCamera.addEventListener('click', async () => {
+  try {
+    visitorCameraStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' }
+      },
+      audio: false
+    });
+
+    visitorCameraVideo.srcObject = visitorCameraStream;
+    visitorCameraModal.style.display = 'flex';
+
+  } catch (error) {
+    console.error('Camera error:', error);
+    alert('Unable to access camera. Please allow camera permission.');
+  }
+});
+
+vCapturePhoto.addEventListener('click', () => {
+
+  if (!visitorCameraStream) {
+    alert('Camera is not active.');
+    return;
+  }
+
+  const width = visitorCameraVideo.videoWidth;
+  const height = visitorCameraVideo.videoHeight;
+
+  visitorCameraCanvas.width = width;
+  visitorCameraCanvas.height = height;
+
+  const ctx = visitorCameraCanvas.getContext('2d');
+
+  ctx.drawImage(
+    visitorCameraVideo,
+    0,
+    0,
+    width,
+    height
+  );
+
+  visitorCameraCanvas.toBlob((blob) => {
+
+    if (!blob) {
+      alert('Could not capture photo.');
+      return;
+    }
+
+    const file = new File(
+      [blob],
+      `visitor-photo-${Date.now()}.jpg`,
+      { type: 'image/jpeg' }
+    );
+
+    // Connect camera photo to existing Visitor upload system
+    pendingPhotoFile = file;
+
+    if (pendingPhotoObjectUrl) {
+      URL.revokeObjectURL(pendingPhotoObjectUrl);
+    }
+
+    pendingPhotoObjectUrl = URL.createObjectURL(file);
+
+    vEls.photoPreview.src = pendingPhotoObjectUrl;
+    vEls.photoPreview.classList.add('show');
+
+    closeVisitorCamera();
+
+  }, 'image/jpeg', 0.85);
+});
+
+vCloseCamera.addEventListener('click', () => {
+  closeVisitorCamera();
+});
+
+function closeVisitorCamera() {
+
+  if (visitorCameraStream) {
+
+    visitorCameraStream.getTracks().forEach(track => {
+      track.stop();
+    });
+
+    visitorCameraStream = null;
+  }
+
+  visitorCameraVideo.srcObject = null;
+  visitorCameraModal.style.display = 'none';
+}
 </script>
 <div class="race-car" id="raceCar">🏎️</div>
 <div class="toast" id="toast"></div>
@@ -2550,6 +2649,71 @@ function wireSheetExport() {
     </div>
     <div class="success-title" id="successTitle">Entry Completed</div>
     <div class="success-sub" id="successSub"></div>
+  </div>
+</div>
+        <!-- Visitor Camera -->
+<div id="visitorCameraModal" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  z-index:99999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+">
+
+  <div style="
+    background:#fff;
+    width:min(500px,100%);
+    border-radius:14px;
+    padding:20px;
+    text-align:center;
+  ">
+
+    <h3>Visitor Photo</h3>
+
+    <video
+      id="visitorCameraVideo"
+      autoplay
+      playsinline
+      style="
+        width:100%;
+        max-height:400px;
+        object-fit:cover;
+        border-radius:10px;
+        background:#000;
+      ">
+    </video>
+
+    <canvas
+      id="visitorCameraCanvas"
+      style="display:none;">
+    </canvas>
+
+    <div style="
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      margin-top:15px;
+    ">
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        id="v-capturePhoto">
+        📸 Capture Photo
+      </button>
+
+      <button
+        type="button"
+        class="btn"
+        id="v-closeCamera">
+        Cancel
+      </button>
+
+    </div>
+
   </div>
 </div>
 </body>
