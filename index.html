@@ -263,6 +263,20 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js" defer></script>
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+  const logo = document.querySelector('.industrial-logo-img');
+
+  if (logo) {
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    favicon.type = 'image/png';
+    favicon.href = logo.src;
+
+    document.head.appendChild(favicon);
+  }
+});
+</script>
 </head>
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
