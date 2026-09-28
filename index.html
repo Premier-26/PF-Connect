@@ -553,17 +553,34 @@ async function testFirebaseWrite() {
         <div class="field"><label for="v-idnumber">ID number</label><input type="text" id="v-idnumber" placeholder="Optional"></div>
         <div class="field"><label for="v-loggedby">Logged by (you)</label><input type="text" id="v-loggedby" placeholder="Your name" required></div>
         <div class="field wide">
-         <label>Visitor photo</label>
-<div class="photo-row">
-  <button type="button" class="btn btn-primary" id="v-openCamera">
-    📷 Open Camera
-  </button>
+       <div class="field wide">
+  <label>Visitor photo</label>
 
-  <img class="photo-preview" id="v-photoPreview" alt="Visitor preview">
+  <div class="photo-row">
+    <button type="button" class="btn btn-primary" id="v-openCamera">
+      📷 Open Camera
+    </button>
+
+    <img
+      class="photo-preview"
+      id="v-photoPreview"
+      alt="Visitor preview"
+    >
+  </div>
+
+  <input type="hidden" id="v-photo">
 </div>
 
-<input type="hidden" id="v-photo">
+<div class="form-actions">
+  <button type="submit" class="btn btn-primary">
+    ➕ Add Visitor
+  </button>
 
+  <span id="visitorMsg" class="msg"></span>
+</div>
+
+</form>
+</section>
     <div class="toolbar">
       <input type="search" id="visitorSearch" placeholder="Search name, company, whom to meet…">
       <select id="visitorStatusFilter">
