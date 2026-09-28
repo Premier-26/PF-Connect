@@ -1310,26 +1310,45 @@ function createLocalDownloads() {
   };
 }
 async function initCapabilities() {
-  alert(
-  window.pfFirebase && window.pfFirebase.db
-    ? "DATABASE: FIREBASE"
-    : "DATABASE: LOCAL STORAGE"
-);
-  if (window.pfFirebase && window.pfFirebase.db) {
-    dbApi = createFirestoreDb(window.pfFirebase);
-  } else {
-    dbApi = createLocalDb();
+
+  // Firebase must be available
+  if (!window.pfFirebase || !window.pfFirebase.db) {
+    console.error('Firebase is not available.');
+
+    alert(
+      'Firebase database is not available.\n\n' +
+      'PF Connect will not use local storage.'
+    );
+
+    return;
   }
-  console.log(
-  'PF Connect DB:',
-  window.pfFirebase && window.pfFirebase.db
-    ? 'FIREBASE FIRESTORE'
-    : 'LOCAL STORAGE'
-);
-  try { downloadsApi = window.claude ? await window.claude.use('downloads') : null; } catch (e) { downloadsApi = null; }
-  if (!downloadsApi) downloadsApi = createLocalDownloads();
-  try { assetsApi = window.claude ? await window.claude.use('assets') : null; } catch (e) { assetsApi = null; }
-  // assetsApi stays null outside Claude; photo-upload calls already check `if (assetsApi)` before using it.
+
+  // Always use Firebase Firestore
+  dbApi = createFirestoreDb(window.pfFirebase);
+
+  console.log('PF Connect DB: FIREBASE FIRESTORE');
+
+  try {
+    downloadsApi = window.claude
+      ? await window.claude.use('downloads')
+      : null;
+  } catch (e) {
+    downloadsApi = null;
+  }
+
+  if (!downloadsApi) {
+    downloadsApi = createLocalDownloads();
+  }
+
+  try {
+    assetsApi = window.claude
+      ? await window.claude.use('assets')
+      : null;
+  } catch (e) {
+    assetsApi = null;
+  }
+
+  // Initialize modules
   initCourier();
   initCourierOut();
   initVisitor();
