@@ -331,25 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
  
 
 <script>
-async function testFirebaseWrite() {
-  try {
-    const ref = await window.pfFirebase.addDoc(
-      window.pfFirebase.collection(
-        window.pfFirebase.db,
-        "test"
-      ),
-      {
-        message: "PF Connect Firebase test",
-        createdAt: new Date().toISOString()
-      }
-    );
 
-    alert("Firebase test successful!\nDocument ID: " + ref.id);
-  } catch (error) {
-    console.error(error);
-    alert("Firebase test failed:\n" + error.message);
-  }
-}
 </script>
 <body>
 <div class="login-overlay industrial-login" id="loginOverlay">
