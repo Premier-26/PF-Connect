@@ -1288,6 +1288,7 @@ function createLocalDownloads() {
   };
 }
 async function initCapabilities() {
+  alert("initCapabilities started");
   if (window.pfFirebase && window.pfFirebase.db) {
     dbApi = createFirestoreDb(window.pfFirebase);
   } else {
