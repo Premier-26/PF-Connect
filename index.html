@@ -278,6 +278,13 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 </head>
+  <script>
+  window.pfFirebaseReady = new Promise((resolve) => {
+    window.addEventListener('pfFirebaseReady', () => {
+      resolve(window.pfFirebase);
+    }, { once: true });
+  });
+</script>
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
   import {
@@ -319,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function () {
     query,
     orderBy
   };
+    window.dispatchEvent(new Event('pfFirebaseReady'));
 </script>
   <button
   type="button"
@@ -1310,6 +1318,7 @@ function createLocalDownloads() {
   };
 }
 async function initCapabilities() {
+  await window.pfFirebaseReady;
 
   // Firebase must be available
   if (!window.pfFirebase || !window.pfFirebase.db) {
