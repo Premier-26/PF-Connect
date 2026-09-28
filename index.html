@@ -1293,6 +1293,12 @@ async function initCapabilities() {
   } else {
     dbApi = createLocalDb();
   }
+  console.log(
+  'PF Connect DB:',
+  window.pfFirebase && window.pfFirebase.db
+    ? 'FIREBASE FIRESTORE'
+    : 'LOCAL STORAGE'
+);
   try { downloadsApi = window.claude ? await window.claude.use('downloads') : null; } catch (e) { downloadsApi = null; }
   if (!downloadsApi) downloadsApi = createLocalDownloads();
   try { assetsApi = window.claude ? await window.claude.use('assets') : null; } catch (e) { assetsApi = null; }
