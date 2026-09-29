@@ -592,6 +592,79 @@ document.addEventListener('DOMContentLoaded', function () {
       <div class="empty" id="visitorEmpty" style="display:none;">No visitors logged yet.</div>
     </div>
   </section>
+  <!-- ============ PATTERN INWARD MODULE ============ -->
+<section class="module" id="module-pattern-inward">
+
+  <section class="panel form-panel">
+
+    <h2>📦 Pattern Inward</h2>
+    <p>Record patterns received from customers / other companies.</p>
+
+    <form id="patternInwardForm">
+
+      <div class="field">
+        <label for="p-date">📅 Received Date</label>
+        <input type="date" id="p-date" required>
+      </div>
+
+      <div class="field">
+        <label for="p-time">🕐 Received Time</label>
+        <input type="time" id="p-time" required>
+      </div>
+
+      <div class="field">
+        <label for="p-patternno">🏷️ Pattern No.</label>
+        <input type="text" id="p-patternno" placeholder="Example: PAT-001" required>
+      </div>
+
+      <div class="field">
+        <label for="p-component">⚙️ Component Name</label>
+        <input type="text" id="p-component" placeholder="Component name" required>
+      </div>
+
+      <div class="field">
+        <label for="p-customer">🏢 Received From / Customer</label>
+        <input type="text" id="p-customer" placeholder="Company name" required>
+      </div>
+
+      <div class="field">
+        <label for="p-courier">🚚 Courier / Transport</label>
+        <input type="text" id="p-courier" placeholder="Courier / Transport name">
+      </div>
+
+      <div class="field">
+        <label for="p-qty">🔢 Quantity</label>
+        <input type="number" id="p-qty" min="1" value="1">
+      </div>
+
+      <div class="field">
+        <label for="p-receivedby">👤 Received By</label>
+        <input type="text" id="p-receivedby" placeholder="Name" required>
+      </div>
+
+      <div class="field wide">
+        <label for="p-remarks">📝 Remarks</label>
+        <textarea id="p-remarks" placeholder="Additional information"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          💾 Save Pattern Inward
+        </button>
+
+        <button type="button" class="btn" id="patternWhatsAppBtn">
+          💬 Send WhatsApp
+        </button>
+
+        <span id="patternMsg" class="msg"></span>
+      </div>
+
+    </form>
+
+  </section>
+
+</section>
+<!-- ============ END PATTERN INWARD MODULE ============ -->
 
   <!-- ============ VEHICLE MOVEMENT MODULE ============ -->
   <section class="module" id="module-vehicle">
@@ -1336,11 +1409,12 @@ async function initCapabilities() {
 
   // Initialize modules
   initCourier();
-  initCourierOut();
-  initVisitor();
-  initVehicle();
-  initPatrol();
-  wireSheetExport();
+initCourierOut();
+initVisitor();
+initVehicle();
+initPatrol();
+initPatternInward();
+wireSheetExport();
 }
 
 /* ==========================================================
@@ -1792,6 +1866,194 @@ function initVisitor() {
     (snap) => { visitorEntries = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderVisitor(); },
     (err) => { console.error(err); vEls.msg.className = 'msg err'; vEls.msg.textContent = 'Connection issue — reload the page.'; }
   );
+}
+  function initPatternInward() {
+
+  const form = document.getElementById('patternInwardForm');
+  const whatsappBtn = document.getElementById('patternWhatsAppBtn');
+  const msg = document.getElementById('patternMsg');
+
+  if (!form) return;
+
+  // Set current date and time
+  const now = new Date();
+
+  document.getElementById('p-date').value =
+    now.toISOString().split('T')[0];
+
+  document.getElementById('p-time').value =
+    now.toTimeString().slice(0, 5);
+
+
+  // SAVE PATTERN INWARD
+  form.addEventListener('submit', async function (e) {
+
+    e.preventDefault();
+
+    msg.textContent = 'Saving...';
+
+    const patternData = {
+
+      receivedDate:
+        document.getElementById('p-date').value,
+
+      receivedTime:
+        document.getElementById('p-time').value,
+
+      patternNo:
+        document.getElementById('p-patternno').value.trim(),
+
+      component:
+        document.getElementById('p-component').value.trim(),
+
+      customer:
+        document.getElementById('p-customer').value.trim(),
+
+      courier:
+        document.getElementById('p-courier').value.trim(),
+
+      quantity:
+        Number(document.getElementById('p-qty').value || 1),
+
+      receivedBy:
+        document.getElementById('p-receivedby').value.trim(),
+
+      remarks:
+        document.getElementById('p-remarks').value.trim(),
+
+      status: 'Received',
+
+      createdAt: Date.now()
+    };
+
+
+    try {
+
+      const ref =
+        await dbApi
+          .collection('patternInwards')
+          .add(patternData);
+
+      form.dataset.patternId = ref.id;
+
+      msg.className = 'msg ok';
+
+      msg.textContent =
+        'Pattern saved successfully.';
+
+      showToast('📦 Pattern Inward saved successfully.');
+
+    } catch (error) {
+
+      console.error('Pattern Inward save error:', error);
+
+      msg.className = 'msg err';
+
+      msg.textContent =
+        'Error saving pattern.';
+
+      showToast(
+        'Unable to save Pattern Inward: ' +
+        error.message
+      );
+
+    }
+
+  });
+
+
+  // WHATSAPP
+  whatsappBtn.addEventListener('click', function () {
+
+    const patternNo =
+      document.getElementById('p-patternno').value.trim();
+
+    const component =
+      document.getElementById('p-component').value.trim();
+
+    const customer =
+      document.getElementById('p-customer').value.trim();
+
+    const date =
+      document.getElementById('p-date').value;
+
+    const time =
+      document.getElementById('p-time').value;
+
+    const courier =
+      document.getElementById('p-courier').value.trim();
+
+    const qty =
+      document.getElementById('p-qty').value;
+
+    const receivedBy =
+      document.getElementById('p-receivedby').value.trim();
+
+    const remarks =
+      document.getElementById('p-remarks').value.trim();
+
+
+    if (!patternNo || !component || !customer) {
+
+      alert(
+        'Please enter Pattern No., Component Name and Received From / Customer.'
+      );
+
+      return;
+    }
+
+
+    const message =
+`📦 *PATTERN INWARD – PF CONNECT*
+
+🏷️ Pattern No.: ${patternNo}
+⚙️ Component: ${component}
+🏢 Received From: ${customer}
+📅 Received Date: ${date}
+🕐 Received Time: ${time}
+🚚 Courier / Transport: ${courier || 'Nil'}
+🔢 Quantity: ${qty}
+👤 Received By: ${receivedBy}
+
+📝 Remarks:
+${remarks || 'Nil'}
+
+📌 Status: Pattern Received`;
+
+
+    /*
+     * Replace the numbers below with actual
+     * WhatsApp numbers.
+     *
+     * Format:
+     * 91 + 10 digit mobile number
+     */
+
+    const recipients = [
+      '919XXXXXXXXX',
+      '919XXXXXXXXX',
+      '919XXXXXXXXX'
+    ];
+
+
+    recipients.forEach(function (phone, index) {
+
+      setTimeout(function () {
+
+        const url =
+          'https://wa.me/' +
+          phone +
+          '?text=' +
+          encodeURIComponent(message);
+
+        window.open(url, '_blank');
+
+      }, index * 1000);
+
+    });
+
+  });
+
 }
 
 /* ==========================================================
