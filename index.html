@@ -2100,22 +2100,22 @@ function initVisitor() {
     }
 
 
-  const message =
-`\uD83D\uDCE6 *PATTERN INWARD – PF CONNECT*
+const message =
+`*PATTERN INWARD – PF CONNECT*
 
-\uD83C\uDFF7\uFE0F Pattern No.: ${d.patternNo || 'Nil'}
-\u2699\uFE0F Component: ${d.component || 'Nil'}
-\uD83C\uDFE2 Received From: ${d.customer || 'Nil'}
-\uD83D\uDCC5 Received Date: ${d.receivedDate || 'Nil'}
-\uD83D\uDD50 Received Time: ${d.receivedTime || 'Nil'}
-\uD83D\uDE9A Courier / Transport: ${d.courier || 'Nil'}
-\uD83D\uDD22 Quantity: ${d.quantity || 1}
-\uD83D\uDC64 Received By: ${d.receivedBy || 'Nil'}
+Pattern No.: ${d.patternNo || 'Nil'}
+Component: ${d.component || 'Nil'}
+Received From: ${d.customer || 'Nil'}
+Received Date: ${d.receivedDate || 'Nil'}
+Received Time: ${d.receivedTime || 'Nil'}
+Courier / Transport: ${d.courier || 'Nil'}
+Quantity: ${d.quantity || 1}
+Received By: ${d.receivedBy || 'Nil'}
 
-\uD83D\uDCDD Remarks:
+Remarks:
 ${d.remarks || 'Nil'}
 
-\uD83D\uDCCC Status: ${d.status || 'Received'}`;
+Status: ${d.status || 'Received'}`;
 
     /*
      * Replace the numbers below with actual
