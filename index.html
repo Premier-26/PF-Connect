@@ -1424,6 +1424,7 @@ initVehicle();
 initPatrol();
 initPatternInward();
 wireSheetExport();
+  
 }
 
 /* ==========================================================
@@ -1900,6 +1901,7 @@ function initVisitor() {
           historyBox.innerHTML =
             '<p>No Pattern Inward records found.</p>';
           return;
+          
         }
 
      historyBox.innerHTML = `
@@ -2125,12 +2127,7 @@ ${remarks || 'Nil'}
      * 91 + 10 digit mobile number
      */
 
-    const recipients = [
-      '919XXXXXXXXX',
-      '919XXXXXXXXX',
-      '919XXXXXXXXX'
-    ];
-
+ const recipients = patternWhatsAppRecipients;
 
     recipients.forEach(function (phone, index) {
 
