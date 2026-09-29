@@ -1884,11 +1884,13 @@ function initVisitor() {
   const msg = document.getElementById('patternMsg');
 
   if (!form) return;
-      const patternWhatsAppRecipients = [
+
+  const patternWhatsAppRecipients = [
     '917550377962',
-    '919500378520',
+    '919500378520'
   ];
-      // LOAD SAVED PATTERN INWARD HISTORY
+
+  // LOAD SAVED PATTERN INWARD HISTORY
   const historyBox = document.getElementById('patternInwardHistory');
 
   dbApi.collection('patternInwards')
@@ -1900,73 +1902,66 @@ function initVisitor() {
           historyBox.innerHTML =
             '<p>No Pattern Inward records found.</p>';
           return;
-          
         }
 
-     historyBox.innerHTML = `
-  <div style="overflow-x:auto;">
-    <table class="data-table" style="width:100%; border-collapse:collapse;">
-      <thead>
-        <tr>
-          <th>S.No</th>
-          <th>Pattern No.</th>
-          <th>Component Name</th>
-          <th>Received From</th>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Courier / Transport</th>
-          <th>Qty</th>
-          <th>Received By</th>
-          <th>Remarks</th>
-        <th>Status</th>
-<th>Action</th>
-        </tr>
-      </thead>
+        historyBox.innerHTML = `
+          <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th>S.No</th>
+                  <th>Pattern No.</th>
+                  <th>Component Name</th>
+                  <th>Received From</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Courier / Transport</th>
+                  <th>Qty</th>
+                  <th>Received By</th>
+                  <th>Remarks</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
 
-      <tbody>
-        ${snap.docs.map((doc, index) => {
+              <tbody>
+                ${snap.docs.map((doc, index) => {
 
-          const d = doc.data();
+                  const d = doc.data();
 
-          return `
-            <tr>
-              <td>${index + 1}</td>
-              <td><strong>${d.patternNo || ''}</strong></td>
-              <td>${d.component || ''}</td>
-              <td>${d.customer || ''}</td>
-              <td>${d.receivedDate || ''}</td>
-              <td>${d.receivedTime || ''}</td>
-              <td>${d.courier || 'Nil'}</td>
-              <td>${d.quantity || 1}</td>
-              <td>${d.receivedBy || ''}</td>
-              <td>${d.remarks || 'Nil'}</td>
-              <td>${d.status || 'Received'}</td>
-              
-              <td>
-  <button
-    type="button"
-    class="btn btn-primary pattern-wa-btn"
-    data-pattern-id="${doc.id}">
-    💬 WhatsApp
-  </button>
-</td>
-            </tr>
-          `;
+                  return `
+                    <tr>
+                      <td>${index + 1}</td>
+                      <td><strong>${d.patternNo || ''}</strong></td>
+                      <td>${d.component || ''}</td>
+                      <td>${d.customer || ''}</td>
+                      <td>${d.receivedDate || ''}</td>
+                      <td>${d.receivedTime || ''}</td>
+                      <td>${d.courier || 'Nil'}</td>
+                      <td>${d.quantity || 1}</td>
+                      <td>${d.receivedBy || ''}</td>
+                      <td>${d.remarks || 'Nil'}</td>
+                      <td>${d.status || 'Received'}</td>
+                      <td>
+                        <button
+                          type="button"
+                          class="btn btn-primary pattern-wa-btn"
+                          data-pattern-id="${doc.id}">
+                          💬 WhatsApp
+                        </button>
+                      </td>
+                    </tr>
+                  `;
 
-        }).join('')}
-      </tbody>
-    </table>
-  </div>
-`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
       },
 
       (error) => {
-
-        console.error(
-          'Pattern history error:',
-          error
-        );
-
+        console.error('Pattern history error:', error);
         historyBox.innerHTML =
           '<p class="msg err">Unable to load saved patterns.</p>';
       }
@@ -1981,16 +1976,13 @@ function initVisitor() {
   document.getElementById('p-time').value =
     now.toTimeString().slice(0, 5);
 
-
   // SAVE PATTERN INWARD
   form.addEventListener('submit', async function (e) {
-
     e.preventDefault();
 
     msg.textContent = 'Saving...';
 
     const patternData = {
-
       receivedDate:
         document.getElementById('p-date').value,
 
@@ -2023,7 +2015,6 @@ function initVisitor() {
       createdAt: Date.now()
     };
 
-
     try {
 
       const ref =
@@ -2034,18 +2025,21 @@ function initVisitor() {
       form.dataset.patternId = ref.id;
 
       msg.className = 'msg ok';
-
       msg.textContent =
         'Pattern saved successfully.';
 
-      showToast('📦 Pattern Inward saved successfully.');
+      showToast(
+        '📦 Pattern Inward saved successfully.'
+      );
 
     } catch (error) {
 
-      console.error('Pattern Inward save error:', error);
+      console.error(
+        'Pattern Inward save error:',
+        error
+      );
 
       msg.className = 'msg err';
-
       msg.textContent =
         'Error saving pattern.';
 
@@ -2053,11 +2047,8 @@ function initVisitor() {
         'Unable to save Pattern Inward: ' +
         error.message
       );
-
     }
-
   });
-
 
   // WHATSAPP
   whatsappBtn.addEventListener('click', function () {
@@ -2089,43 +2080,31 @@ function initVisitor() {
     const remarks =
       document.getElementById('p-remarks').value.trim();
 
-
     if (!patternNo || !component || !customer) {
-
       alert(
         'Please enter Pattern No., Component Name and Received From / Customer.'
       );
-
       return;
     }
 
+    const message =
+`📦 *PATTERN INWARD – PF CONNECT*
 
-const message =
-`*PATTERN INWARD – PF CONNECT*
+🏷️ Pattern No.: ${patternNo}
+⚙️ Component: ${component}
+🏢 Received From: ${customer}
+📅 Received Date: ${date}
+🕐 Received Time: ${time}
+🚚 Courier / Transport: ${courier || 'Nil'}
+🔢 Quantity: ${qty}
+👤 Received By: ${receivedBy}
 
-Pattern No.: ${d.patternNo || 'Nil'}
-Component: ${d.component || 'Nil'}
-Received From: ${d.customer || 'Nil'}
-Received Date: ${d.receivedDate || 'Nil'}
-Received Time: ${d.receivedTime || 'Nil'}
-Courier / Transport: ${d.courier || 'Nil'}
-Quantity: ${d.quantity || 1}
-Received By: ${d.receivedBy || 'Nil'}
+📝 Remarks:
+${remarks || 'Nil'}
 
-Remarks:
-${d.remarks || 'Nil'}
+📌 Status: Pattern Received`;
 
-Status: ${d.status || 'Received'}`;
-
-    /*
-     * Replace the numbers below with actual
-     * WhatsApp numbers.
-     *
-     * Format:
-     * 91 + 10 digit mobile number
-     */
-
- const recipients = patternWhatsAppRecipients;
+    const recipients = patternWhatsAppRecipients;
 
     recipients.forEach(function (phone, index) {
 
@@ -2142,30 +2121,30 @@ Status: ${d.status || 'Received'}`;
       }, index * 1000);
 
     });
-
   });
-     // SAVED ROW WHATSAPP - RECIPIENT SELECTION
-document.addEventListener('click', function (e) {
 
-  const button = e.target.closest('.pattern-wa-btn');
+  // SAVED ROW WHATSAPP
+  document.addEventListener('click', function (e) {
 
-  if (!button) return;
+    const button = e.target.closest('.pattern-wa-btn');
 
-  const patternId = button.dataset.patternId;
+    if (!button) return;
 
-  dbApi.collection('patternInwards')
-    .doc(patternId)
-    .get()
-    .then(function (result) {
+    const patternId = button.dataset.patternId;
 
-      if (!result.exists) {
-        alert('Pattern record not found.');
-        return;
-      }
+    dbApi.collection('patternInwards')
+      .doc(patternId)
+      .get()
+      .then(function (result) {
 
-      const d = result.data();
+        if (!result.exists) {
+          alert('Pattern record not found.');
+          return;
+        }
 
-      const message =
+        const d = result.data();
+
+        const message =
 `📦 *PATTERN INWARD – PF CONNECT*
 
 🏷️ Pattern No.: ${d.patternNo || 'Nil'}
@@ -2182,317 +2161,24 @@ ${d.remarks || 'Nil'}
 
 📌 Status: ${d.status || 'Received'}`;
 
-      // REMOVE OLD RECIPIENT WINDOW IF IT EXISTS
-      const oldWindow =
-        document.getElementById('patternRecipientWindow');
+        patternWhatsAppRecipients.forEach(function (phone, index) {
 
-      if (oldWindow) {
-        oldWindow.remove();
-      }
+          setTimeout(function () {
 
-      // CREATE RECIPIENT WINDOW
-      const recipientWindow =
-        document.createElement('div');
+            const url =
+              'https://wa.me/' +
+              phone +
+              '?text=' +
+              encodeURIComponent(message);
 
-      recipientWindow.id =
-        'patternRecipientWindow';
+            window.open(url, '_blank');
 
-      recipientWindow.innerHTML = `
+          }, index * 1000);
 
-        <div style="
-          position:fixed;
-          inset:0;
-          background:rgba(0,0,0,0.55);
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          z-index:99999;
-        ">
+        });
 
-          <div style="
-            background:white;
-            width:360px;
-            max-width:90%;
-            border-radius:12px;
-            padding:20px;
-            box-shadow:0 10px 30px rgba(0,0,0,0.3);
-          ">
-
-            <h3 style="
-              margin-top:0;
-              margin-bottom:10px;
-            ">
-              💬 Select WhatsApp Recipients
-            </h3>
-
-            <p style="
-              font-size:14px;
-              color:#666;
-            ">
-              Select who should receive this Pattern Inward message.
-            </p>
-
-            <!-- SELECT ALL -->
-
-            <label style="
-              display:block;
-              padding:10px;
-              margin:8px 0;
-              background:#f5f5f5;
-              border-radius:6px;
-              cursor:pointer;
-            ">
-
-              <input
-                type="checkbox"
-                id="patternSelectAll"
-                style="margin-right:8px;"
-              >
-
-              <strong>Select All</strong>
-
-            </label>
-
-
-            <!-- RECIPIENT 1 -->
-
-            <label style="
-              display:block;
-              padding:10px;
-              margin:8px 0;
-              border:1px solid #ddd;
-              border-radius:6px;
-              cursor:pointer;
-            ">
-
-              <input
-                type="checkbox"
-                class="pattern-recipient"
-                value="917550377962"
-                style="margin-right:8px;"
-              >
-
-              7550377962
-
-            </label>
-
-
-            <!-- RECIPIENT 2 -->
-
-            <label style="
-              display:block;
-              padding:10px;
-              margin:8px 0;
-              border:1px solid #ddd;
-              border-radius:6px;
-              cursor:pointer;
-            ">
-
-              <input
-                type="checkbox"
-                class="pattern-recipient"
-                value="919500378520"
-                style="margin-right:8px;"
-              >
-
-              9500378520
-
-            </label>
-
-
-            <!-- BUTTONS -->
-
-            <div style="
-              display:flex;
-              gap:10px;
-              margin-top:18px;
-            ">
-
-              <button
-                type="button"
-                id="patternSendSelected"
-                class="btn btn-primary"
-                style="flex:1;"
-              >
-                💬 Send WhatsApp
-              </button>
-
-              <button
-                type="button"
-                id="patternCancelRecipients"
-                class="btn"
-                style="flex:1;"
-              >
-                Cancel
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      `;
-
-      document.body.appendChild(
-        recipientWindow
-      );
-
-
-      // SELECT ALL
-
-      const selectAll =
-        document.getElementById(
-          'patternSelectAll'
-        );
-
-      const recipientCheckboxes =
-        document.querySelectorAll(
-          '.pattern-recipient'
-        );
-
-
-      selectAll.addEventListener(
-        'change',
-        function () {
-
-          recipientCheckboxes.forEach(
-            function (checkbox) {
-
-              checkbox.checked =
-                selectAll.checked;
-
-            }
-          );
-
-        }
-      );
-
-
-      // INDIVIDUAL CHECKBOXES
-
-      recipientCheckboxes.forEach(
-        function (checkbox) {
-
-          checkbox.addEventListener(
-            'change',
-            function () {
-
-              const allSelected =
-                Array.from(
-                  recipientCheckboxes
-                ).every(
-                  function (item) {
-                    return item.checked;
-                  }
-                );
-
-              selectAll.checked =
-                allSelected;
-
-            }
-          );
-
-        }
-      );
-
-
-      // CANCEL BUTTON
-
-      document
-        .getElementById(
-          'patternCancelRecipients'
-        )
-        .addEventListener(
-          'click',
-          function () {
-
-            recipientWindow.remove();
-
-          }
-        );
-
-
-      // SEND BUTTON
-
-      document
-        .getElementById(
-          'patternSendSelected'
-        )
-        .addEventListener(
-          'click',
-          function () {
-
-            const selectedRecipients =
-              Array.from(
-                recipientCheckboxes
-              )
-              .filter(
-                function (checkbox) {
-                  return checkbox.checked;
-                }
-              )
-              .map(
-                function (checkbox) {
-                  return checkbox.value;
-                }
-              );
-
-
-            // NO RECIPIENT SELECTED
-
-            if (
-              selectedRecipients.length === 0
-            ) {
-
-              alert(
-                'Please select at least one recipient.'
-              );
-
-              return;
-
-            }
-
-
-            // CLOSE WINDOW
-
-            recipientWindow.remove();
-
-
-            // OPEN WHATSAPP
-
-            selectedRecipients.forEach(
-              function (phone, index) {
-
-                setTimeout(
-                  function () {
-
-                    const url =
-                      'https://wa.me/' +
-                      phone +
-                      '?text=' +
-                      encodeURIComponent(
-                        message
-                      );
-
-                    window.open(
-                      url,
-                      '_blank'
-                    );
-
-                  },
-                  index * 1000
-                );
-
-              }
-            );
-
-          }
-        );
-
-    })
-    .catch(
-      function (error) {
+      })
+      .catch(function (error) {
 
         console.error(
           'Pattern WhatsApp error:',
@@ -2503,10 +2189,11 @@ ${d.remarks || 'Nil'}
           'Unable to prepare WhatsApp message.'
         );
 
-      }
-    );
+      });
 
-});
+  });
+
+}
 /* ==========================================================
    VEHICLE MOVEMENT MODULE
    ========================================================== */
