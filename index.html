@@ -1887,7 +1887,6 @@ function initVisitor() {
       const patternWhatsAppRecipients = [
     '917550377962',
     '919500378520',
-    '919XXXXXXXXX'
   ];
       // LOAD SAVED PATTERN INWARD HISTORY
   const historyBox = document.getElementById('patternInwardHistory');
@@ -2144,6 +2143,70 @@ ${remarks || 'Nil'}
       }, index * 1000);
 
     });
+
+  });
+      // WHATSAPP FROM SAVED PATTERN ROW
+  document.addEventListener('click', function (e) {
+
+    const button = e.target.closest('.pattern-wa-btn');
+
+    if (!button) return;
+
+    const patternId = button.dataset.patternId;
+
+    dbApi.collection('patternInwards')
+      .doc(patternId)
+      .get()
+      .then(function (result) {
+
+        if (!result.exists) {
+          alert('Pattern record not found.');
+          return;
+        }
+
+        const d = result.data();
+
+        const message =
+`📦 *PATTERN INWARD – PF CONNECT*
+
+🏷️ Pattern No.: ${d.patternNo || 'Nil'}
+⚙️ Component: ${d.component || 'Nil'}
+🏢 Received From: ${d.customer || 'Nil'}
+📅 Received Date: ${d.receivedDate || 'Nil'}
+🕐 Received Time: ${d.receivedTime || 'Nil'}
+🚚 Courier / Transport: ${d.courier || 'Nil'}
+🔢 Quantity: ${d.quantity || 1}
+👤 Received By: ${d.receivedBy || 'Nil'}
+
+📝 Remarks:
+${d.remarks || 'Nil'}
+
+📌 Status: ${d.status || 'Received'}`;
+
+        patternWhatsAppRecipients.forEach(function (phone, index) {
+
+          setTimeout(function () {
+
+            const url =
+              'https://wa.me/' +
+              phone +
+              '?text=' +
+              encodeURIComponent(message);
+
+            window.open(url, '_blank');
+
+          }, index * 1000);
+
+        });
+
+      })
+      .catch(function (error) {
+
+        console.error('Pattern WhatsApp error:', error);
+
+        alert('Unable to prepare WhatsApp message.');
+
+      });
 
   });
 
