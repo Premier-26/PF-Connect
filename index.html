@@ -1883,6 +1883,53 @@ function initVisitor() {
   const msg = document.getElementById('patternMsg');
 
   if (!form) return;
+      // LOAD SAVED PATTERN INWARD HISTORY
+  const historyBox = document.getElementById('patternInwardHistory');
+
+  dbApi.collection('patternInwards')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(
+      (snap) => {
+
+        if (snap.docs.length === 0) {
+          historyBox.innerHTML =
+            '<p>No Pattern Inward records found.</p>';
+          return;
+        }
+
+        historyBox.innerHTML = snap.docs.map((doc) => {
+
+          const d = doc.data();
+
+          return `
+            <div class="panel" style="margin-top:12px;">
+              <strong>🏷️ ${d.patternNo || ''}</strong><br>
+              ⚙️ Component: ${d.component || ''}<br>
+              🏢 Received From: ${d.customer || ''}<br>
+              📅 Date: ${d.receivedDate || ''}<br>
+              🕐 Time: ${d.receivedTime || ''}<br>
+              🚚 Courier: ${d.courier || 'Nil'}<br>
+              🔢 Quantity: ${d.quantity || 1}<br>
+              👤 Received By: ${d.receivedBy || ''}<br>
+              📝 Remarks: ${d.remarks || 'Nil'}<br>
+              📌 Status: ${d.status || 'Received'}
+            </div>
+          `;
+
+        }).join('');
+      },
+
+      (error) => {
+
+        console.error(
+          'Pattern history error:',
+          error
+        );
+
+        historyBox.innerHTML =
+          '<p class="msg err">Unable to load saved patterns.</p>';
+      }
+    );
 
   // Set current date and time
   const now = new Date();
