@@ -2144,28 +2144,28 @@ Status: ${d.status || 'Received'}`;
     });
 
   });
-      // WHATSAPP FROM SAVED PATTERN ROW
-  document.addEventListener('click', function (e) {
+     // SAVED ROW WHATSAPP - RECIPIENT SELECTION
+document.addEventListener('click', function (e) {
 
-    const button = e.target.closest('.pattern-wa-btn');
+  const button = e.target.closest('.pattern-wa-btn');
 
-    if (!button) return;
+  if (!button) return;
 
-    const patternId = button.dataset.patternId;
+  const patternId = button.dataset.patternId;
 
-    dbApi.collection('patternInwards')
-      .doc(patternId)
-      .get()
-      .then(function (result) {
+  dbApi.collection('patternInwards')
+    .doc(patternId)
+    .get()
+    .then(function (result) {
 
-        if (!result.exists) {
-          alert('Pattern record not found.');
-          return;
-        }
+      if (!result.exists) {
+        alert('Pattern record not found.');
+        return;
+      }
 
-        const d = result.data();
+      const d = result.data();
 
-        const message =
+      const message =
 `📦 *PATTERN INWARD – PF CONNECT*
 
 🏷️ Pattern No.: ${d.patternNo || 'Nil'}
@@ -2182,34 +2182,228 @@ ${d.remarks || 'Nil'}
 
 📌 Status: ${d.status || 'Received'}`;
 
-        patternWhatsAppRecipients.forEach(function (phone, index) {
+      // CREATE RECIPIENT WINDOW
+      const oldWindow = document.getElementById('patternRecipientWindow');
 
-          setTimeout(function () {
+      if (oldWindow) {
+        oldWindow.remove();
+      }
 
-            const url =
-              'https://wa.me/' +
-              phone +
-              '?text=' +
-              encodeURIComponent(message);
+      const recipientWindow = document.createElement('div');
 
-            window.open(url, '_blank');
+      recipientWindow.id = 'patternRecipientWindow';
 
-          }, index * 1000);
+      recipientWindow.innerHTML = `
+        <div style="
+          position:fixed;
+          inset:0;
+          background:rgba(0,0,0,0.55);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          z-index:99999;
+        ">
 
+          <div style="
+            background:white;
+            width:360px;
+            max-width:90%;
+            border-radius:12px;
+            padding:20px;
+            box-shadow:0 10px 30px rgba(0,0,0,0.3);
+          ">
+
+            <h3 style="margin-top:0;">
+              💬 Select WhatsApp Recipients
+            </h3>
+
+            <p style="font-size:14px;color:#666;">
+              Select who should receive this Pattern Inward message.
+            </p>
+
+            <label style="
+              display:block;
+              padding:10px;
+              margin:8px 0;
+              background:#f5f5f5;
+              border-radius:6px;
+              cursor:pointer;
+            ">
+              <input
+                type="checkbox"
+                id="patternSelectAll"
+                style="margin-right:8px;"
+              >
+              <strong>Select All</strong>
+            </label>
+
+            <label style="
+              display:block;
+              padding:10px;
+              margin:8px 0;
+              border:1px solid #ddd;
+              border-radius:6px;
+              cursor:pointer;
+            ">
+              <input
+                type="checkbox"
+                class="pattern-recipient"
+                value="917550377962"
+                style="margin-right:8px;"
+              >
+              7550377962
+            </label>
+
+            <label style="
+              display:block;
+              padding:10px;
+              margin:8px 0;
+              border:1px solid #ddd;
+              border-radius:6px;
+              cursor:pointer;
+            ">
+              <input
+                type="checkbox"
+                class="pattern-recipient"
+                value="919500378520"
+                style="margin-right:8px;"
+              >
+              9500378520
+            </label>
+
+            <div style="
+              display:flex;
+              gap:10px;
+              margin-top:18px;
+            ">
+
+              <button
+                type="button"
+                id="patternSendSelected"
+                class="btn btn-primary"
+                style="flex:1;"
+              >
+                💬 Send WhatsApp
+              </button>
+
+              <button
+                type="button"
+                id="patternCancelRecipients"
+                class="btn"
+                style="flex:1;"
+              >
+                Cancel
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+      document.body.appendChild(recipientWindow);
+
+      // SELECT ALL
+      const selectAll =
+        document.getElementById('patternSelectAll');
+
+      const recipientCheckboxes =
+        document.querySelectorAll('.pattern-recipient');
+
+      selectAll.addEventListener('change', function () {
+
+        recipientCheckboxes.forEach(function (checkbox) {
+          checkbox.checked = selectAll.checked;
         });
-
-      })
-      .catch(function (error) {
-
-        console.error('Pattern WhatsApp error:', error);
-
-        alert('Unable to prepare WhatsApp message.');
 
       });
 
-  });
+      // UPDATE SELECT ALL WHEN INDIVIDUAL CHECKBOXES CHANGE
+      recipientCheckboxes.forEach(function (checkbox) {
 
-}
+        checkbox.addEventListener('change', function () {
+
+          const allSelected =
+            Array.from(recipientCheckboxes)
+              .every(function (item) {
+                return item.checked;
+              });
+
+          selectAll.checked = allSelected;
+
+        });
+
+      });
+
+      // CANCEL
+      document
+        .getElementById('patternCancelRecipients')
+        .addEventListener('click', function () {
+
+          recipientWindow.remove();
+
+        });
+
+      // SEND SELECTED
+      document
+        .getElementById('patternSendSelected')
+        .addEventListener('click', function () {
+
+          const selectedRecipients =
+            Array.from(recipientCheckboxes)
+              .filter(function (checkbox) {
+                return checkbox.checked;
+              })
+              .map(function (checkbox) {
+                return checkbox.value;
+              });
+
+          if (selectedRecipients.length === 0) {
+
+            alert('Please select at least one recipient.');
+
+            return;
+
+          }
+
+          // CLOSE WINDOW
+          recipientWindow.remove();
+
+          // OPEN WHATSAPP FOR SELECTED RECIPIENTS
+          selectedRecipients.forEach(function (phone, index) {
+
+            setTimeout(function () {
+
+              const url =
+                'https://wa.me/' +
+                phone +
+                '?text=' +
+                encodeURIComponent(message);
+
+              window.open(url, '_blank');
+
+            }, index * 1000);
+
+          });
+
+        });
+
+    })
+    .catch(function (error) {
+
+      console.error(
+        'Pattern WhatsApp error:',
+        error
+      );
+
+      alert(
+        'Unable to prepare WhatsApp message.'
+      );
+
+    });
+
+});
 
 /* ==========================================================
    VEHICLE MOVEMENT MODULE
