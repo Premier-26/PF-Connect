@@ -2117,7 +2117,7 @@ const url =
   encodeURIComponent(message);
 
 window.open(url, '_blank');
-     // SAVED ROW WHATSAPP
+      // SAVED ROW WHATSAPP
   document.addEventListener('click', function (e) {
 
     const button = e.target.closest('.pattern-wa-btn');
@@ -2155,15 +2155,22 @@ ${d.remarks || 'Nil'}
 
 📌 Status: ${d.status || 'Received'}`;
 
-       const phone = patternWhatsAppRecipients[0];
+        patternWhatsAppRecipients.forEach(function (phone, index) {
 
-const url =
-  'https://wa.me/' +
-  phone +
-  '?text=' +
-  encodeURIComponent(message);
+          setTimeout(function () {
 
-window.open(url, '_blank');
+            const url =
+              'https://wa.me/' +
+              phone +
+              '?text=' +
+              encodeURIComponent(message);
+
+            window.open(url, '_blank');
+
+          }, index * 1000);
+
+        });
+
       })
       .catch(function (error) {
 
