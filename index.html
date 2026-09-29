@@ -2104,24 +2104,15 @@ ${remarks || 'Nil'}
 
 📌 Status: Pattern Received`;
 
-    const recipients = patternWhatsAppRecipients;
+    const phone = patternWhatsAppRecipients[0];
 
-    recipients.forEach(function (phone, index) {
+const url =
+  'https://wa.me/' +
+  phone +
+  '?text=' +
+  encodeURIComponent(message);
 
-      setTimeout(function () {
-
-        const url =
-          'https://wa.me/' +
-          phone +
-          '?text=' +
-          encodeURIComponent(message);
-
-        window.open(url, '_blank');
-
-      }, index * 1000);
-
-    });
-  });
+window.open(url, '_blank');
 
   // SAVED ROW WHATSAPP
   document.addEventListener('click', function (e) {
@@ -2161,22 +2152,15 @@ ${d.remarks || 'Nil'}
 
 📌 Status: ${d.status || 'Received'}`;
 
-        patternWhatsAppRecipients.forEach(function (phone, index) {
+       const phone = patternWhatsAppRecipients[0];
 
-          setTimeout(function () {
+const url =
+  'https://wa.me/' +
+  phone +
+  '?text=' +
+  encodeURIComponent(message);
 
-            const url =
-              'https://wa.me/' +
-              phone +
-              '?text=' +
-              encodeURIComponent(message);
-
-            window.open(url, '_blank');
-
-          }, index * 1000);
-
-        });
-
+window.open(url, '_blank');
       })
       .catch(function (error) {
 
