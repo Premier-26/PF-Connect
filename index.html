@@ -1897,26 +1897,51 @@ function initVisitor() {
           return;
         }
 
-        historyBox.innerHTML = snap.docs.map((doc) => {
+     historyBox.innerHTML = `
+  <div style="overflow-x:auto;">
+    <table class="data-table" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Pattern No.</th>
+          <th>Component Name</th>
+          <th>Received From</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Courier / Transport</th>
+          <th>Qty</th>
+          <th>Received By</th>
+          <th>Remarks</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        ${snap.docs.map((doc, index) => {
 
           const d = doc.data();
 
           return `
-            <div class="panel" style="margin-top:12px;">
-              <strong>🏷️ ${d.patternNo || ''}</strong><br>
-              ⚙️ Component: ${d.component || ''}<br>
-              🏢 Received From: ${d.customer || ''}<br>
-              📅 Date: ${d.receivedDate || ''}<br>
-              🕐 Time: ${d.receivedTime || ''}<br>
-              🚚 Courier: ${d.courier || 'Nil'}<br>
-              🔢 Quantity: ${d.quantity || 1}<br>
-              👤 Received By: ${d.receivedBy || ''}<br>
-              📝 Remarks: ${d.remarks || 'Nil'}<br>
-              📌 Status: ${d.status || 'Received'}
-            </div>
+            <tr>
+              <td>${index + 1}</td>
+              <td><strong>${d.patternNo || ''}</strong></td>
+              <td>${d.component || ''}</td>
+              <td>${d.customer || ''}</td>
+              <td>${d.receivedDate || ''}</td>
+              <td>${d.receivedTime || ''}</td>
+              <td>${d.courier || 'Nil'}</td>
+              <td>${d.quantity || 1}</td>
+              <td>${d.receivedBy || ''}</td>
+              <td>${d.remarks || 'Nil'}</td>
+              <td>${d.status || 'Received'}</td>
+            </tr>
           `;
 
-        }).join('');
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+`;
       },
 
       (error) => {
