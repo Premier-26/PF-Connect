@@ -990,12 +990,16 @@ let pendingDeliver = null; // { id, kind }
 
 function openDeliverConfirm(entry, kind) {
   pendingDeliver = { id: entry.id, kind };
+
   const nameField = document.getElementById('deliverName');
   const info = document.getElementById('deliverInfo');
+
   if (kind === 'courier') {
     info.innerHTML = `Courier from <strong>${escapeHtml(entry.senderName || '-')}</strong> for <strong>${escapeHtml(entry.handedOverTo || 'you')}</strong>. Please have the recipient confirm below.`;
+
     nameField.value = entry.handedOverTo || '';
   }
+
   deliverOverlay.classList.add('show');
   nameField.focus();
 }
