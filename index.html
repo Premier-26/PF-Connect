@@ -2101,21 +2101,21 @@ function initVisitor() {
 
 
     const message =
-`📦 *PATTERN INWARD – PF CONNECT*
+`\u{1F4E6} *PATTERN INWARD – PF CONNECT*
 
-🏷️ Pattern No.: ${patternNo}
-⚙️ Component: ${component}
-🏢 Received From: ${customer}
-📅 Received Date: ${date}
-🕐 Received Time: ${time}
-🚚 Courier / Transport: ${courier || 'Nil'}
-🔢 Quantity: ${qty}
-👤 Received By: ${receivedBy}
+\u{1F3F7}\uFE0F Pattern No.: ${d.patternNo || 'Nil'}
+\u2699\uFE0F Component: ${d.component || 'Nil'}
+\u{1F3E2} Received From: ${d.customer || 'Nil'}
+\u{1F4C5} Received Date: ${d.receivedDate || 'Nil'}
+\u{1F551} Received Time: ${d.receivedTime || 'Nil'}
+\u{1F69A} Courier / Transport: ${d.courier || 'Nil'}
+\u{1F522} Quantity: ${d.quantity || 1}
+\u{1F464} Received By: ${d.receivedBy || 'Nil'}
 
-📝 Remarks:
-${remarks || 'Nil'}
+\u{1F4DD} Remarks:
+${d.remarks || 'Nil'}
 
-📌 Status: Pattern Received`;
+\u{1F4CC} Status: ${d.status || 'Received'}`;
 
 
     /*
