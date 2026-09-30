@@ -1883,99 +1883,121 @@ function initVisitor() {
   const msg = document.getElementById('patternMsg');
 
   if (!form) return;
-      // LOAD SAVED PATTERN INWARD HISTORY
-  const historyBox = document.getElementById('patternInwardHistory');
+     // LOAD SAVED PATTERN INWARD HISTORY
+const historyBox = document.getElementById('patternInwardHistory');
 
-  dbApi.collection('patternInwards')
-    .orderBy('createdAt', 'desc')
-    .onSnapshot(
-      (snap) => {
+dbApi.collection('patternInwards')
+  .orderBy('createdAt', 'desc')
+  .onSnapshot(
+    (snap) => {
 
-        if (snap.docs.length === 0) {
-          historyBox.innerHTML =
-            '<p>No Pattern Inward records found.</p>';
-          return;
-        }
-
-     historyBox.innerHTML = `
-  <div style="overflow-x:auto;">
-    <table class="data-table" style="width:100%; border-collapse:collapse;">
-      <thead>
-        <tr>
-          <th>S.No</th>
-          <th>Pattern No.</th>
-          <th>Component Name</th>
-          <th>Received From</th>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Courier / Transport</th>
-          <th>Qty</th>
-          <th>Received By</th>
-          <th>Remarks</th>
-          <th>Status</th>
-          <th>WhatsApp</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        ${snap.docs.map((doc, index) => {
-
-          const d = doc.data();
-
-        return `
-  <tr>
-    <td>${index + 1}</td>
-    <td><strong>${d.patternNo || ''}</strong></td>
-    <td>${d.component || ''}</td>
-    <td>${d.customer || ''}</td>
-    <td>${d.receivedDate || ''}</td>
-    <td>${d.receivedTime || ''}</td>
-    <td>${d.courier || 'Nil'}</td>
-    <td>${d.quantity || 1}</td>
-    <td>${d.receivedBy || ''}</td>
-    <td>${d.remarks || 'Nil'}</td>
-    <td>${d.status || 'Received'}</td>
-
-    <td>
-      <button
-        type="button"
-        title="Send via WhatsApp"
-        onclick="sendPatternWhatsApp('${doc.id}')"
-        style="
-          border:none;
-          background:#25D366;
-          color:white;
-          border-radius:50%;
-          width:34px;
-          height:34px;
-          cursor:pointer;
-          font-size:17px;
-        ">
-        💬
-      </button>
-    </td>
-
-  </tr>
-`;
-
-        }).join('')}
-      </tbody>
-    </table>
-  </div>
-`;
-      },
-
-      (error) => {
-
-        console.error(
-          'Pattern history error:',
-          error
-        );
-
+      if (snap.docs.length === 0) {
         historyBox.innerHTML =
-          '<p class="msg err">Unable to load saved patterns.</p>';
+          '<p>No Pattern Inward records found.</p>';
+        return;
       }
-    );
+
+      historyBox.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table class="data-table" style="width:100%; border-collapse:collapse;">
+
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Pattern No.</th>
+                <th>Component Name</th>
+                <th>Received From</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Courier / Transport</th>
+                <th>Qty</th>
+                <th>Received By</th>
+                <th>Remarks</th>
+                <th>Status</th>
+                <th>WhatsApp</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              ${snap.docs.map((doc, index) => {
+
+                const d = doc.data();
+
+                return `
+                  <tr>
+
+                    <td>${index + 1}</td>
+
+                    <td>
+                      <strong>${d.patternNo || ''}</strong>
+                    </td>
+
+                    <td>${d.component || ''}</td>
+
+                    <td>${d.customer || ''}</td>
+
+                    <td>${d.receivedDate || ''}</td>
+
+                    <td>${d.receivedTime || ''}</td>
+
+                    <td>${d.courier || 'Nil'}</td>
+
+                    <td>${d.quantity || 1}</td>
+
+                    <td>${d.receivedBy || ''}</td>
+
+                    <td>${d.remarks || 'Nil'}</td>
+
+                    <td>${d.status || 'Received'}</td>
+
+                    <td style="text-align:center;">
+
+                      <button
+                        type="button"
+                        title="Send this Pattern Inward through WhatsApp"
+                        onclick="sendPatternWhatsApp('${doc.id}')"
+                        style="
+                          border:none;
+                          background:#25D366;
+                          color:white;
+                          border-radius:50%;
+                          width:34px;
+                          height:34px;
+                          cursor:pointer;
+                          font-size:17px;
+                          line-height:34px;
+                          padding:0;
+                        "
+                      >
+                        💬
+                      </button>
+
+                    </td>
+
+                  </tr>
+                `;
+
+              }).join('')}
+
+            </tbody>
+
+          </table>
+        </div>
+      `;
+    },
+
+    (error) => {
+
+      console.error(
+        'Pattern history error:',
+        error
+      );
+
+      historyBox.innerHTML =
+        '<p class="msg err">Unable to load saved patterns.</p>';
+    }
+  );
 
   // Set current date and time
   const now = new Date();
