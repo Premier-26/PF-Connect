@@ -1913,6 +1913,7 @@ function initVisitor() {
           <th>Received By</th>
           <th>Remarks</th>
           <th>Status</th>
+          <th>WhatsApp</th>
         </tr>
       </thead>
 
@@ -1921,21 +1922,41 @@ function initVisitor() {
 
           const d = doc.data();
 
-          return `
-            <tr>
-              <td>${index + 1}</td>
-              <td><strong>${d.patternNo || ''}</strong></td>
-              <td>${d.component || ''}</td>
-              <td>${d.customer || ''}</td>
-              <td>${d.receivedDate || ''}</td>
-              <td>${d.receivedTime || ''}</td>
-              <td>${d.courier || 'Nil'}</td>
-              <td>${d.quantity || 1}</td>
-              <td>${d.receivedBy || ''}</td>
-              <td>${d.remarks || 'Nil'}</td>
-              <td>${d.status || 'Received'}</td>
-            </tr>
-          `;
+        return `
+  <tr>
+    <td>${index + 1}</td>
+    <td><strong>${d.patternNo || ''}</strong></td>
+    <td>${d.component || ''}</td>
+    <td>${d.customer || ''}</td>
+    <td>${d.receivedDate || ''}</td>
+    <td>${d.receivedTime || ''}</td>
+    <td>${d.courier || 'Nil'}</td>
+    <td>${d.quantity || 1}</td>
+    <td>${d.receivedBy || ''}</td>
+    <td>${d.remarks || 'Nil'}</td>
+    <td>${d.status || 'Received'}</td>
+
+    <td>
+      <button
+        type="button"
+        title="Send via WhatsApp"
+        onclick="sendPatternWhatsApp('${doc.id}')"
+        style="
+          border:none;
+          background:#25D366;
+          color:white;
+          border-radius:50%;
+          width:34px;
+          height:34px;
+          cursor:pointer;
+          font-size:17px;
+        ">
+        💬
+      </button>
+    </td>
+
+  </tr>
+`;
 
         }).join('')}
       </tbody>
