@@ -447,7 +447,6 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
     <button class="btn btn-primary" id="exportSheetBtn" type="button">📤 Export CSV (Google Sheet)</button>
     <span class="msg" id="exportSheetMsg"></span>
-  <button class="btn btn-ghost admin-only" id="userManagementBtn" type="button">👤 User Management</button>
   </div>
   <div class="panel form-panel admin-only" id="sheetSettingsPanel" style="display:none;margin-bottom:20px;">
     <h2>Google Sheet export destination</h2>
@@ -1190,11 +1189,45 @@ if (confirmId) {
 
 function applySession(session) {
   document.body.className = 'role-' + session.role;
-  authLine.innerHTML = `Signed in as <strong>${escapeHtml(session.username)}</strong> (${session.role}) &nbsp;<button class="btn btn-ghost" id="logoutBtn" style="padding:4px 10px;font-size:0.78rem;">Log out</button>`;
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    try { localStorage.removeItem('pfc_session'); } catch (e) {}
-    location.reload();
+authLine.innerHTML = `
+  Signed in as <strong>${escapeHtml(session.username)}</strong> (${session.role})
+  &nbsp;
+
+  ${
+    session.role === 'admin'
+      ? `<button
+           class="btn btn-ghost"
+           id="topUserManagementBtn"
+           style="padding:4px 10px;font-size:0.78rem;"
+         >
+           👤 User Management
+         </button>`
+      : ''
+  }
+
+  <button
+    class="btn btn-ghost"
+    id="logoutBtn"
+    style="padding:4px 10px;font-size:0.78rem;"
+  >
+    Log out
+  </button>
+`;
+const topUserManagementBtn =
+  document.getElementById('topUserManagementBtn');
+
+if (topUserManagementBtn) {
+  topUserManagementBtn.addEventListener('click', () => {
+
+    const panel =
+      document.getElementById('userManagementPanel');
+
+    if (panel) {
+      panel.style.display = 'block';
+    }
+
   });
+}
   loginOverlay.classList.remove('show');
   appWrap.style.display = '';
 }
