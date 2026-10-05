@@ -853,46 +853,37 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 
 <!-- greeting card modal -->
-<!-- greeting card modal -->
 <div class="card-overlay" id="cardOverlay">
   <div class="card-box">
-
     <canvas id="greetCanvas" width="640" height="800"></canvas>
-
     <div class="card-note" id="cardPhoneLine"></div>
-
+    <textarea id="cardMsgPreview" class="card-msg" readonly rows="4"></textarea>
     <div class="card-actions">
-      <button
-        class="btn btn-primary"
-        id="cardCopyImg"
-        type="button">
-        📋 Copy Photo
-      </button>
-
-      <button
-        class="btn btn-primary"
-        id="cardNotify"
-        type="button">
-        📱 Notify
-      </button>
-
-      <button
-        class="btn btn-ghost"
-        id="cardDownload"
-        type="button">
-        ⬇ Download
-      </button>
+      <button class="btn btn-primary" id="cardCopyMsg" type="button">Copy greeting message</button>
+      <button class="btn btn-primary" id="cardCopyImg" type="button">Copy card image</button>
+      <button class="btn btn-ghost" id="cardDownload" type="button">Download card</button>
     </div>
-
     <div class="card-actions">
-      <button
-        class="btn btn-ghost"
-        id="cardClose"
-        type="button">
-        Close
-      </button>
+      <a class="btn btn-ghost" id="cardWhatsappLink" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;">Open in WhatsApp again</a>
+      <button class="btn btn-ghost" id="cardClose" type="button">Close</button>
     </div>
+  </div>
+</div>
 
+<div class="card-overlay" id="deliverOverlay">
+  <div class="card-box" style="max-width:320px;">
+    <div class="login-title" style="margin-bottom:4px;">Confirm receipt</div>
+    <div class="login-sub" id="deliverInfo" style="margin-bottom:16px;"></div>
+    <div class="field" style="text-align:left;margin-bottom:14px;">
+      <label for="deliverName">Recipient's name (please confirm)</label>
+      <input type="text" id="deliverName" placeholder="Your name">
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-primary" id="deliverConfirmBtn" type="button" style="width:100%;">Confirm receipt</button>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-ghost" id="deliverCancelBtn" type="button">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -2924,305 +2915,89 @@ function drawQrOnCanvas(ctx, text, x, y, size) {
 }
 
 function drawGreetingCard(entry, photoImg) {
-
   const ctx = greetCanvas.getContext('2d');
+  const W = greetCanvas.width, H = greetCanvas.height;
+  ctx.clearRect(0,0,W,H);
 
-  const W = greetCanvas.width;
-  const H = greetCanvas.height;
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, '#2c5f7c'); grad.addColorStop(1, '#1c3f52');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
 
-  ctx.clearRect(0, 0, W, H);
+  const pad = 32;
+  ctx.fillStyle = '#fbfaf7';
+  roundRect(ctx, pad, pad, W - pad*2, H - pad*2, 20); ctx.fill();
 
-  /*
-   * BACKGROUND
-   */
-  ctx.fillStyle = '#1c3f52';
-  ctx.fillRect(0, 0, W, H);
+  let y = pad + 34;
 
+  // company logo
+  if (cardLogoImg && cardLogoImg.complete && cardLogoImg.naturalWidth) {
+    const logoSize = 44;
+    ctx.drawImage(cardLogoImg, W/2 - logoSize/2, y - logoSize + 8, logoSize, logoSize);
+    y += 20;
+  }
 
-  /*
-   * PHOTO AREA
-   *
-   * The visitor photo becomes the main part of
-   * the greeting card.
-   */
-  const photoX = 25;
-  const photoY = 25;
-  const photoW = W - 50;
-  const photoH = 540;
+  const site = (document.getElementById('siteName').value || 'PF Connect').trim();
+  ctx.fillStyle = '#2c5f7c';
+  ctx.font = '700 22px -apple-system, Segoe UI, Roboto, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(site, W/2, y);
+  y += 20;
 
+  ctx.strokeStyle = '#dcd6c8'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad+30, y); ctx.lineTo(W-pad-30, y); ctx.stroke();
+  y += 90;
+
+  // photo circle
+  const cx = W/2, cy = y, r = 78;
   ctx.save();
-
-  roundRect(
-    ctx,
-    photoX,
-    photoY,
-    photoW,
-    photoH,
-    22
-  );
-
-  ctx.clip();
-
-
-  if (
-    photoImg &&
-    photoImg.width &&
-    photoImg.height
-  ) {
-
-    const iw = photoImg.width;
-    const ih = photoImg.height;
-
-    const scale = Math.max(
-      photoW / iw,
-      photoH / ih
-    );
-
-    const dw = iw * scale;
-    const dh = ih * scale;
-
-    ctx.drawImage(
-      photoImg,
-      photoX + (photoW - dw) / 2,
-      photoY + (photoH - dh) / 2,
-      dw,
-      dh
-    );
-
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.closePath(); ctx.clip();
+  if (photoImg) {
+    const iw = photoImg.width, ih = photoImg.height;
+    const scale = Math.max((r*2)/iw, (r*2)/ih);
+    const dw = iw*scale, dh = ih*scale;
+    ctx.drawImage(photoImg, cx - dw/2, cy - dh/2, dw, dh);
   } else {
-
-    /*
-     * Photo not available
-     */
-    ctx.fillStyle = '#dfe8ec';
-    ctx.fillRect(
-      photoX,
-      photoY,
-      photoW,
-      photoH
-    );
-
-    const initials =
-      (entry.name || '?')
-        .trim()
-        .split(/\s+/)
-        .map(w => w[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
-
-    ctx.fillStyle = '#2c5f7c';
-
-    ctx.font =
-      '700 80px -apple-system, Segoe UI, Roboto, sans-serif';
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    ctx.fillText(
-      initials,
-      W / 2,
-      photoY + photoH / 2
-    );
-
+    ctx.fillStyle = '#e8f0f3'; ctx.fillRect(cx-r, cy-r, r*2, r*2);
+    ctx.fillStyle = '#2c5f7c'; ctx.font = '700 40px -apple-system, Segoe UI, Roboto, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const initials = (entry.name || '?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    ctx.fillText(initials, cx, cy+4);
     ctx.textBaseline = 'alphabetic';
   }
-
   ctx.restore();
+  ctx.strokeStyle = '#2c5f7c'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+  y += r + 42;
 
-
-  /*
-   * DARK TRANSPARENT AREA
-   * at the bottom of the photo.
-   *
-   * This makes the greeting text readable
-   * while keeping the text INSIDE the photo.
-   */
-  const overlayH = 250;
-
-  const gradient =
-    ctx.createLinearGradient(
-      0,
-      photoY + photoH - overlayH,
-      0,
-      photoY + photoH
-    );
-
-  gradient.addColorStop(
-    0,
-    'rgba(0,0,0,0)'
-  );
-
-  gradient.addColorStop(
-    0.35,
-    'rgba(0,0,0,0.55)'
-  );
-
-  gradient.addColorStop(
-    1,
-    'rgba(0,0,0,0.88)'
-  );
-
-  ctx.fillStyle = gradient;
-
-  ctx.fillRect(
-    photoX,
-    photoY + photoH - overlayH,
-    photoW,
-    overlayH
-  );
-
-
-  /*
-   * GREETING TEXT INSIDE PHOTO
-   */
-  const site =
-    (
-      document.getElementById('siteName')?.value ||
-      'PREMIER FOUNDRIES'
-    ).trim();
-
-  const name =
-    entry.name || 'Guest';
-
-  const meeting =
-    entry.meeting || '-';
-
-  const date =
-    fmtDate(entry.date);
-
-  const time =
-    entry.timeIn || '';
-
-
+  ctx.fillStyle = '#1c2430';
+  ctx.font = '700 24px -apple-system, Segoe UI, Roboto, sans-serif';
   ctx.textAlign = 'center';
+  ctx.fillText('Welcome, ' + (entry.name || 'Guest') + '!', W/2, y);
+  y += 30;
 
+  ctx.fillStyle = '#4a5568';
+  ctx.font = '400 15px -apple-system, Segoe UI, Roboto, sans-serif';
+  ctx.fillText('Visiting: ' + (entry.meeting || '-'), W/2, y);
+  y += 24;
+  ctx.fillText((entry.purpose || '') + '  •  ' + fmtDate(entry.date) + '  •  ' + (entry.timeIn || ''), W/2, y);
+  y += 32;
 
-  /*
-   * Welcome line
-   */
-  ctx.fillStyle = '#ffffff';
-
-  ctx.font =
-    '700 28px -apple-system, Segoe UI, Roboto, sans-serif';
-
-  ctx.fillText(
-    `Welcome ${name}! 🙏`,
-    W / 2,
-    photoY + photoH - 170
-  );
-
-
-  /*
-   * Thank you
-   */
-  ctx.font =
-    '400 16px -apple-system, Segoe UI, Roboto, sans-serif';
-
-  ctx.fillText(
-    `Thank you for visiting ${site} today.`,
-    W / 2,
-    photoY + photoH - 138
-  );
-
-
-  /*
-   * Meeting
-   */
-  ctx.fillText(
-    `You're meeting: ${meeting}`,
-    W / 2,
-    photoY + photoH - 112
-  );
-
-
-  /*
-   * Date + time
-   */
-  ctx.fillText(
-    `Date: ${date}   Time: ${time}`,
-    W / 2,
-    photoY + photoH - 86
-  );
-
-
-  /*
-   * Reference message
-   */
-  ctx.font =
-    'italic 13px -apple-system, Segoe UI, Roboto, sans-serif';
-
-  ctx.fillText(
-    'Please keep this message for reference.',
-    W / 2,
-    photoY + photoH - 55
-  );
-
-
-  /*
-   * BORDER AROUND PHOTO
-   */
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 3;
-
-  roundRect(
-    ctx,
-    photoX,
-    photoY,
-    photoW,
-    photoH,
-    22
-  );
-
-  ctx.stroke();
-
-
-  /*
-   * QR CODE BELOW PHOTO
-   *
-   * Gate staff can scan this to check
-   * the visitor out.
-   */
+  // QR code — gate scans this on exit to check the visitor out
   const qrSize = 130;
-
-  const qrY = 595;
-
-  const qrDrawn =
-    entry.id
-      ? drawQrOnCanvas(
-          ctx,
-          PORTAL_URL + '?checkout=' + entry.id,
-          W / 2 - qrSize / 2,
-          qrY,
-          qrSize
-        )
-      : false;
-
-
+  const qrDrawn = entry.id ? drawQrOnCanvas(ctx, PORTAL_URL + '?checkout=' + entry.id, W/2 - qrSize/2, y, qrSize) : false;
   if (qrDrawn) {
-
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1;
-
-    ctx.strokeRect(
-      W / 2 - qrSize / 2,
-      qrY,
-      qrSize,
-      qrSize
-    );
-
-    ctx.fillStyle = '#ffffff';
-
-    ctx.font =
-      '400 12px -apple-system, Segoe UI, Roboto, sans-serif';
-
-    ctx.fillText(
-      'Scan to check visitor out',
-      W / 2,
-      qrY + qrSize + 22
-    );
+    ctx.strokeStyle = '#dcd6c8'; ctx.lineWidth = 1;
+    ctx.strokeRect(W/2 - qrSize/2, y, qrSize, qrSize);
+    y += qrSize + 18;
+    ctx.fillStyle = '#4a5568';
+    ctx.font = '400 12px -apple-system, Segoe UI, Roboto, sans-serif';
+    ctx.fillText('Gate staff: scan this in PF Connect to check out', W/2, y);
+    y += 26;
   }
 
+  ctx.font = 'italic 14px -apple-system, Segoe UI, Roboto, sans-serif';
+  ctx.fillStyle = '#2c5f7c';
+  ctx.fillText('Thank you for visiting us today.', W/2, H - pad - 20);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
