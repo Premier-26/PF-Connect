@@ -1951,10 +1951,11 @@ function initUserManagement() {
   const userManagementBtn = document.getElementById('userManagementBtn');
   const msg = document.getElementById('userManagementMsg');
 
-  if (!createBtn || !panel) return;
-    userManagementBtn.addEventListener('click', function () {
-    panel.style.display = 'block';
-  });
+  if (!createBtn || !panel || !userManagementBtn) return;
+
+userManagementBtn.addEventListener('click', function () {
+  panel.style.display = 'block';
+});
 
   createBtn.addEventListener('click', async function () {
 
