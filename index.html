@@ -1948,9 +1948,13 @@ function initUserManagement() {
   const createBtn = document.getElementById('createUserBtn');
   const closeBtn = document.getElementById('closeUserManagementBtn');
   const panel = document.getElementById('userManagementPanel');
+  const userManagementBtn = document.getElementById('userManagementBtn');
   const msg = document.getElementById('userManagementMsg');
 
   if (!createBtn || !panel) return;
+    userManagementBtn.addEventListener('click', function () {
+    panel.style.display = 'block';
+  });
 
   createBtn.addEventListener('click', async function () {
 
