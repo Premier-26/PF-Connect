@@ -406,6 +406,45 @@ document.addEventListener('DOMContentLoaded', function () {
   </nav>
 
   <div class="sheet-export-bar">
+    <div class="panel form-panel admin-only" id="userManagementPanel" style="display:none;margin-bottom:20px;">
+
+  <h2>👤 User Management</h2>
+
+  <div class="field">
+    <label for="newUsername">Username</label>
+    <input type="text" id="newUsername" placeholder="Enter username">
+  </div>
+
+  <div class="field">
+    <label for="newPassword">Password</label>
+    <input type="password" id="newPassword" placeholder="Enter password">
+  </div>
+
+  <div class="field">
+    <label for="newUserRole">Role</label>
+    <select id="newUserRole">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" id="createUserBtn" type="button">
+      ➕ Create User
+    </button>
+
+    <button class="btn" id="closeUserManagementBtn" type="button">
+      ✖ Close
+    </button>
+
+    <span class="msg" id="userManagementMsg"></span>
+  </div>
+
+  <div id="userList" style="margin-top:20px;">
+    Loading users...
+  </div>
+
+</div>
     <button class="btn btn-primary" id="exportSheetBtn" type="button">📤 Export CSV (Google Sheet)</button>
     <span class="msg" id="exportSheetMsg"></span>
    <button class="btn btn-ghost admin-only" id="userManagementBtn" type="button">👤 User Management</button>
