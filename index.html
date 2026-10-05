@@ -1216,18 +1216,82 @@ function trySession() {
   return false;
 }
 
-document.getElementById('loginForm').addEventListener('submit', (ev) => {
+document.getElementById('loginForm').addEventListener('submit', async (ev) => {
+
   ev.preventDefault();
+
   const u = document.getElementById('l-user').value.trim();
   const p = document.getElementById('l-pass').value;
-  const match = PFC_USERS.find(x => x.username === u && x.password === p);
+
   const msg = document.getElementById('loginMsg');
-  if (!match) { msg.textContent = 'Incorrect username or password.'; return; }
-  msg.textContent = '';
-  const session = { username: match.username, role: match.role };
-  try { localStorage.setItem('pfc_session', JSON.stringify(session)); } catch (e) {}
-  applySession(session);
-  initCapabilities();
+
+  msg.textContent = 'Checking login...';
+
+  try {
+
+    // Wait until Firebase is ready
+    await window.pfFirebaseReady;
+
+    if (!window.pfFirebase || !window.pfFirebase.db) {
+      msg.textContent = 'Firebase is not available.';
+      return;
+    }
+
+    // Get user from Firebase
+    const userRef =
+      window.pfFirebase.doc(
+        window.pfFirebase.db,
+        'users',
+        u
+      );
+
+    const userSnap = await window.pfFirebase.getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      msg.textContent = 'Incorrect username or password.';
+      return;
+    }
+
+    const userData = userSnap.data();
+
+    // Check password
+    if (userData.password !== p) {
+      msg.textContent = 'Incorrect username or password.';
+      return;
+    }
+
+    // Check active status
+    if (userData.active !== true) {
+      msg.textContent = 'This user account is inactive.';
+      return;
+    }
+
+    msg.textContent = '';
+
+    const session = {
+      username: userData.username,
+      role: userData.role
+    };
+
+    try {
+      localStorage.setItem(
+        'pfc_session',
+        JSON.stringify(session)
+      );
+    } catch (e) {}
+
+    applySession(session);
+
+    initCapabilities();
+
+  } catch (error) {
+
+    console.error('Firebase login error:', error);
+
+    msg.textContent =
+      'Unable to connect to Firebase.';
+  }
+
 });
 
 if (!confirmId && !checkoutId) {
