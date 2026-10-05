@@ -3249,11 +3249,21 @@ if (vOpenCamera) {
       }
 
       // Open camera
-      visitorCameraStream =
-        await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false
-        });
+     if (!navigator.mediaDevices) {
+  alert('Camera API is not available in this browser.');
+  return;
+}
+
+if (!navigator.mediaDevices.getUserMedia) {
+  alert('Camera access is not supported by this browser.');
+  return;
+}
+
+visitorCameraStream =
+  await navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: false
+  });
 
       visitorCameraVideo.srcObject =
         visitorCameraStream;
