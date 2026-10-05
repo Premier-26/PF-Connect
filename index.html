@@ -3122,63 +3122,72 @@ vOpenCamera.addEventListener('click', async () => {
   }
 });
 
-vCapturePhoto.addEventListener('click', () => {
+document.addEventListener('DOMContentLoaded', () => {
 
-  if (!visitorCameraStream) {
-    alert('Camera is not active.');
-    return;
+  const capturePhotoBtn = document.getElementById('v-capturePhoto');
+  const closeCameraBtn = document.getElementById('v-closeCamera');
+
+  if (capturePhotoBtn) {
+    capturePhotoBtn.addEventListener('click', () => {
+
+      if (!visitorCameraStream) {
+        alert('Camera is not active.');
+        return;
+      }
+
+      const width = visitorCameraVideo.videoWidth;
+      const height = visitorCameraVideo.videoHeight;
+
+      visitorCameraCanvas.width = width;
+      visitorCameraCanvas.height = height;
+
+      const ctx = visitorCameraCanvas.getContext('2d');
+
+      ctx.drawImage(
+        visitorCameraVideo,
+        0,
+        0,
+        width,
+        height
+      );
+
+      visitorCameraCanvas.toBlob((blob) => {
+
+        if (!blob) {
+          alert('Could not capture photo.');
+          return;
+        }
+
+        const file = new File(
+          [blob],
+          `visitor-photo-${Date.now()}.jpg`,
+          { type: 'image/jpeg' }
+        );
+
+        pendingPhotoFile = file;
+
+        if (pendingPhotoObjectUrl) {
+          URL.revokeObjectURL(pendingPhotoObjectUrl);
+        }
+
+        pendingPhotoObjectUrl = URL.createObjectURL(file);
+
+        vEls.photoPreview.src = pendingPhotoObjectUrl;
+        vEls.photoPreview.classList.add('show');
+
+        closeVisitorCamera();
+
+      }, 'image/jpeg', 0.85);
+    });
   }
 
-  const width = visitorCameraVideo.videoWidth;
-  const height = visitorCameraVideo.videoHeight;
+  if (closeCameraBtn) {
+    closeCameraBtn.addEventListener('click', () => {
+      closeVisitorCamera();
+    });
+  }
 
-  visitorCameraCanvas.width = width;
-  visitorCameraCanvas.height = height;
-
-  const ctx = visitorCameraCanvas.getContext('2d');
-
-  ctx.drawImage(
-    visitorCameraVideo,
-    0,
-    0,
-    width,
-    height
-  );
-
-  visitorCameraCanvas.toBlob((blob) => {
-
-    if (!blob) {
-      alert('Could not capture photo.');
-      return;
-    }
-
-    const file = new File(
-      [blob],
-      `visitor-photo-${Date.now()}.jpg`,
-      { type: 'image/jpeg' }
-    );
-
-    // Connect camera photo to existing Visitor upload system
-    pendingPhotoFile = file;
-
-    if (pendingPhotoObjectUrl) {
-      URL.revokeObjectURL(pendingPhotoObjectUrl);
-    }
-
-    pendingPhotoObjectUrl = URL.createObjectURL(file);
-
-    vEls.photoPreview.src = pendingPhotoObjectUrl;
-    vEls.photoPreview.classList.add('show');
-
-    closeVisitorCamera();
-
-  }, 'image/jpeg', 0.85);
 });
-
-vCloseCamera.addEventListener('click', () => {
-  closeVisitorCamera();
-});
-
 function closeVisitorCamera() {
 
   if (visitorCameraStream) {
