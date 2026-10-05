@@ -2216,8 +2216,86 @@ ${remarks || 'Nil'}
 
     });
 
+    });
+
+}
+
+
+// USER MANAGEMENT
+function initUserManagement() {
+
+  const createBtn = document.getElementById('createUserBtn');
+  const closeBtn = document.getElementById('closeUserManagementBtn');
+  const panel = document.getElementById('userManagementPanel');
+  const userManagementBtn = document.getElementById('userManagementBtn');
+  const msg = document.getElementById('userManagementMsg');
+
+  if (!panel || !userManagementBtn) {
+    console.error('User Management elements not found.');
+    return;
+  }
+
+  userManagementBtn.addEventListener('click', function () {
+    panel.style.display = 'block';
   });
 
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      panel.style.display = 'none';
+    });
+  }
+
+  if (!createBtn) return;
+
+  createBtn.addEventListener('click', async function () {
+
+    const username =
+      document.getElementById('newUsername').value.trim();
+
+    const password =
+      document.getElementById('newPassword').value;
+
+    const role =
+      document.getElementById('newUserRole').value;
+
+    if (!username || !password) {
+      msg.className = 'msg err';
+      msg.textContent = 'Please enter username and password.';
+      return;
+    }
+
+    msg.className = 'msg';
+    msg.textContent = 'Creating user...';
+
+    try {
+
+      await dbApi
+        .collection('users')
+        .doc(username)
+        .set({
+          username: username,
+          password: password,
+          role: role,
+          active: true,
+          createdAt: Date.now()
+        });
+
+      msg.className = 'msg ok';
+      msg.textContent = 'User created successfully.';
+
+      document.getElementById('newUsername').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('newUserRole').value = 'user';
+
+    } catch (error) {
+
+      console.error('Create user error:', error);
+
+      msg.className = 'msg err';
+      msg.textContent = 'Unable to create user.';
+    }
+
+  });
 }
 
 /* ==========================================================
