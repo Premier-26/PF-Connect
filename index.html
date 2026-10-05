@@ -1188,47 +1188,73 @@ if (confirmId) {
 }
 
 function applySession(session) {
+
   document.body.className = 'role-' + session.role;
-authLine.innerHTML = `
-  Signed in as <strong>${escapeHtml(session.username)}</strong> (${session.role})
-  &nbsp;
 
-  ${
-    session.role === 'admin'
-      ? `<button
-           class="btn btn-ghost"
-           id="topUserManagementBtn"
-           style="padding:4px 10px;font-size:0.78rem;"
-         >
-           👤 User Management
-         </button>`
-      : ''
-  }
+  authLine.innerHTML = `
+    Signed in as <strong>${escapeHtml(session.username)}</strong> (${session.role})
+    &nbsp;
 
-  <button
-    class="btn btn-ghost"
-    id="logoutBtn"
-    style="padding:4px 10px;font-size:0.78rem;"
-  >
-    Log out
-  </button>
-`;
-const topUserManagementBtn =
-  document.getElementById('topUserManagementBtn');
-
-if (topUserManagementBtn) {
-  topUserManagementBtn.addEventListener('click', () => {
-
-    const panel =
-      document.getElementById('userManagementPanel');
-
-    if (panel) {
-      panel.style.display = 'block';
+    ${
+      session.role === 'admin'
+        ? `<button
+             class="btn btn-ghost"
+             id="topUserManagementBtn"
+             style="padding:4px 10px;font-size:0.78rem;"
+           >
+             👤 User Management
+           </button>`
+        : ''
     }
 
-  });
-}
+    <button
+      class="btn btn-ghost"
+      id="logoutBtn"
+      style="padding:4px 10px;font-size:0.78rem;"
+    >
+      Log out
+    </button>
+  `;
+
+  // User Management button
+  const topUserManagementBtn =
+    document.getElementById('topUserManagementBtn');
+
+  if (topUserManagementBtn) {
+
+    topUserManagementBtn.addEventListener('click', () => {
+
+      const panel =
+        document.getElementById('userManagementPanel');
+
+      if (panel) {
+        panel.style.display = 'block';
+      }
+
+    });
+
+  }
+
+  // Logout button
+  const logoutBtn =
+    document.getElementById('logoutBtn');
+
+  if (logoutBtn) {
+
+    logoutBtn.addEventListener('click', () => {
+
+      try {
+        localStorage.removeItem('pfc_session');
+      } catch (e) {}
+
+      location.reload();
+
+    });
+
+  }
+
   loginOverlay.classList.remove('show');
+
   appWrap.style.display = '';
 }
 
