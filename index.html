@@ -3317,11 +3317,16 @@ visitorCameraStream =
 
       } else {
 
-        alert(
-          'Unable to open the camera.\n\n' +
-          'Error: ' +
-          error.name
-        );
+     alert(
+  'Unable to open the camera.\n\n' +
+  'Error type: ' + error.name +
+  '\nMessage: ' + error.message +
+  '\nmediaDevices: ' + !!navigator.mediaDevices +
+  '\ngetUserMedia: ' + !!(
+    navigator.mediaDevices &&
+    navigator.mediaDevices.getUserMedia
+  )
+);
       }
 
     }
