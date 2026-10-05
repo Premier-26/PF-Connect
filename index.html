@@ -1951,11 +1951,22 @@ function initUserManagement() {
   const userManagementBtn = document.getElementById('userManagementBtn');
   const msg = document.getElementById('userManagementMsg');
 
-  if (!createBtn || !panel || !userManagementBtn) return;
+  if (!panel || !userManagementBtn) {
+    console.error('User Management elements not found.');
+    return;
+  }
 
-userManagementBtn.addEventListener('click', function () {
-  panel.style.display = 'block';
-});
+  userManagementBtn.addEventListener('click', function () {
+    panel.style.display = 'block';
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      panel.style.display = 'none';
+    });
+  }
+
+  if (!createBtn) return;
 
   createBtn.addEventListener('click', async function () {
 
@@ -2006,12 +2017,7 @@ userManagementBtn.addEventListener('click', function () {
     }
 
   });
-
-  closeBtn.addEventListener('click', function () {
-    panel.style.display = 'none';
-  });
 }
-
       historyBox.innerHTML = `
         <div style="overflow-x:auto;">
           <table class="data-table" style="width:100%; border-collapse:collapse;">
