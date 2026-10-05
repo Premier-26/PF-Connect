@@ -3220,107 +3220,246 @@ const vOpenCamera = document.getElementById('v-openCamera');
 const vCloseCamera = document.getElementById('v-closeCamera');
 const vCapturePhoto = document.getElementById('v-capturePhoto');
 
-const visitorCameraModal = document.getElementById('visitorCameraModal');
-const visitorCameraVideo = document.getElementById('visitorCameraVideo');
-const visitorCameraCanvas = document.getElementById('visitorCameraCanvas');
+const visitorCameraModal =
+  document.getElementById('visitorCameraModal');
 
-vOpenCamera.addEventListener('click', async () => {
-  try {
-    visitorCameraStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: 'environment' }
-      },
-      audio: false
-    });
+const visitorCameraVideo =
+  document.getElementById('visitorCameraVideo');
 
-    visitorCameraVideo.srcObject = visitorCameraStream;
-    visitorCameraModal.style.display = 'flex';
+const visitorCameraCanvas =
+  document.getElementById('visitorCameraCanvas');
 
-  } catch (error) {
-    console.error('Camera error:', error);
-    alert('Unable to access camera. Please allow camera permission.');
-  }
-});
 
-document.addEventListener('DOMContentLoaded', () => {
+// OPEN CAMERA
+if (vOpenCamera) {
 
-  const capturePhotoBtn = document.getElementById('v-capturePhoto');
-  const closeCameraBtn = document.getElementById('v-closeCamera');
+  vOpenCamera.addEventListener('click', async () => {
 
-  if (capturePhotoBtn) {
-    capturePhotoBtn.addEventListener('click', () => {
+    try {
 
-      if (!visitorCameraStream) {
-        alert('Camera is not active.');
+      // Check browser camera support
+      if (!navigator.mediaDevices ||
+          !navigator.mediaDevices.getUserMedia) {
+
+        alert(
+          'Camera is not supported by this browser.'
+        );
+
         return;
       }
 
-      const width = visitorCameraVideo.videoWidth;
-      const height = visitorCameraVideo.videoHeight;
+      // Open camera
+      visitorCameraStream =
+        await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
 
-      visitorCameraCanvas.width = width;
-      visitorCameraCanvas.height = height;
+      visitorCameraVideo.srcObject =
+        visitorCameraStream;
 
-      const ctx = visitorCameraCanvas.getContext('2d');
-
-      ctx.drawImage(
-        visitorCameraVideo,
-        0,
-        0,
-        width,
-        height
+      visitorCameraVideo.setAttribute(
+        'playsinline',
+        ''
       );
 
-      visitorCameraCanvas.toBlob((blob) => {
+      visitorCameraVideo.setAttribute(
+        'autoplay',
+        ''
+      );
+
+      await visitorCameraVideo.play();
+
+      visitorCameraModal.style.display = 'flex';
+
+    } catch (error) {
+
+      console.error(
+        'Camera error:',
+        error.name,
+        error.message
+      );
+
+      if (error.name === 'NotAllowedError') {
+
+        alert(
+          'Camera permission was denied.\n\n' +
+          'Please allow camera permission for PF Connect in your browser settings.'
+        );
+
+      } else if (error.name === 'NotFoundError') {
+
+        alert(
+          'No camera was found on this device.'
+        );
+
+      } else if (error.name === 'NotReadableError') {
+
+        alert(
+          'The camera is already being used by another application.'
+        );
+
+      } else if (error.name === 'SecurityError') {
+
+        alert(
+          'Camera access was blocked by the browser security settings.'
+        );
+
+      } else {
+
+        alert(
+          'Unable to open the camera.\n\n' +
+          'Error: ' +
+          error.name
+        );
+      }
+
+    }
+
+  });
+
+}
+
+
+// CAPTURE PHOTO
+if (vCapturePhoto) {
+
+  vCapturePhoto.addEventListener('click', () => {
+
+    if (!visitorCameraStream) {
+
+      alert('Camera is not active.');
+
+      return;
+    }
+
+    const width =
+      visitorCameraVideo.videoWidth;
+
+    const height =
+      visitorCameraVideo.videoHeight;
+
+    if (!width || !height) {
+
+      alert(
+        'Camera is not ready yet. Please wait a moment and try again.'
+      );
+
+      return;
+    }
+
+    visitorCameraCanvas.width = width;
+    visitorCameraCanvas.height = height;
+
+    const ctx =
+      visitorCameraCanvas.getContext('2d');
+
+    ctx.drawImage(
+      visitorCameraVideo,
+      0,
+      0,
+      width,
+      height
+    );
+
+    visitorCameraCanvas.toBlob(
+      (blob) => {
 
         if (!blob) {
-          alert('Could not capture photo.');
+
+          alert(
+            'Could not capture photo.'
+          );
+
           return;
         }
 
-        const file = new File(
-          [blob],
-          `visitor-photo-${Date.now()}.jpg`,
-          { type: 'image/jpeg' }
-        );
+        const file =
+          new File(
+            [blob],
+            `visitor-photo-${Date.now()}.jpg`,
+            {
+              type: 'image/jpeg'
+            }
+          );
 
         pendingPhotoFile = file;
 
         if (pendingPhotoObjectUrl) {
-          URL.revokeObjectURL(pendingPhotoObjectUrl);
+
+          URL.revokeObjectURL(
+            pendingPhotoObjectUrl
+          );
+
         }
 
-        pendingPhotoObjectUrl = URL.createObjectURL(file);
+        pendingPhotoObjectUrl =
+          URL.createObjectURL(file);
 
-        vEls.photoPreview.src = pendingPhotoObjectUrl;
-        vEls.photoPreview.classList.add('show');
+        if (vEls.photoPreview) {
+
+          vEls.photoPreview.src =
+            pendingPhotoObjectUrl;
+
+          vEls.photoPreview.classList.add(
+            'show'
+          );
+
+        }
 
         closeVisitorCamera();
 
-      }, 'image/jpeg', 0.85);
-    });
-  }
+      },
+      'image/jpeg',
+      0.85
+    );
 
-  if (closeCameraBtn) {
-    closeCameraBtn.addEventListener('click', () => {
+  });
+
+}
+
+
+// CLOSE CAMERA
+if (vCloseCamera) {
+
+  vCloseCamera.addEventListener(
+    'click',
+    () => {
+
       closeVisitorCamera();
-    });
-  }
 
-});
+    }
+  );
+
+}
+
+
+// CLOSE CAMERA FUNCTION
 function closeVisitorCamera() {
 
   if (visitorCameraStream) {
 
-    visitorCameraStream.getTracks().forEach(track => {
-      track.stop();
-    });
+    visitorCameraStream
+      .getTracks()
+      .forEach(track => {
+        track.stop();
+      });
 
     visitorCameraStream = null;
   }
 
-  visitorCameraVideo.srcObject = null;
-  visitorCameraModal.style.display = 'none';
+  if (visitorCameraVideo) {
+
+    visitorCameraVideo.srcObject = null;
+
+  }
+
+  if (visitorCameraModal) {
+
+    visitorCameraModal.style.display = 'none';
+
+  }
+
 }
 </script>
 <div class="race-car" id="raceCar">🏎️</div>
