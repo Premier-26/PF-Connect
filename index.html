@@ -2039,13 +2039,30 @@ function initVisitor() {
     };
     try {
       let photoUrlForCard = pendingPhotoObjectUrl || '';
-      if (pendingPhotoFile && assetsApi) {
-        try {
-          const up = await assetsApi.upload(pendingPhotoFile);
-          base.photoAssetId = up.id; base.photoUrl = up.url;
-          photoUrlForCard = up.url;
-        } catch (e) { console.error('photo upload failed', e); }
-      }
+     if (pendingPhotoFile) {
+  try {
+    if (!assetsApi) {
+      throw new Error('Photo upload service is not available.');
+    }
+
+    const up = await assetsApi.upload(pendingPhotoFile);
+
+    console.log('Visitor photo upload result:', up);
+
+    if (!up || !up.url) {
+      throw new Error('Photo uploaded but no photo URL was returned.');
+    }
+
+    base.photoAssetId = up.id || '';
+    base.photoUrl = up.url;
+    photoUrlForCard = up.url;
+
+  } catch (e) {
+    console.error('Visitor photo upload failed:', e);
+    alert('Visitor photo could not be uploaded. Please try again.');
+    return;
+  }
+}
       const ref = await dbApi.collection('visitors').add(base);
       const newEntry = { ...base, id: ref.id, photoUrl: photoUrlForCard };
       showSuccessCelebration('Visitor Registered', base.name ? base.name : '');
