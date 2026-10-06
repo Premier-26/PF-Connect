@@ -344,6 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
     collection,
     doc,
     getDoc,
+    getDocs,
     setDoc,
     updateDoc,
     deleteDoc,
@@ -1522,10 +1523,22 @@ function createLocalDownloads() {
           };
         },
 
-        async add(data) {
+             async add(data) {
           const ref = await fb.addDoc(colRef, data);
           return {
             id: ref.id
+          };
+        },
+
+        async get() {
+          const snap = await fb.getDocs(colRef);
+
+          return {
+            empty: snap.empty,
+            docs: snap.docs.map(d => ({
+              id: d.id,
+              data: () => d.data()
+            }))
           };
         },
 
