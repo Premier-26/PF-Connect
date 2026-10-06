@@ -464,7 +464,6 @@ document.addEventListener('DOMContentLoaded', function () {
   </div>
 
 </div>
-    <button class="btn btn-primary" id="exportSheetBtn" type="button">📤 Export CSV (Google Sheet)</button>
     <span class="msg" id="exportSheetMsg"></span>
   </div>
   <div class="panel form-panel admin-only" id="sheetSettingsPanel" style="display:none;margin-bottom:20px;">
@@ -3172,8 +3171,6 @@ async function exportAllToSheet(sheetUrl) {
 }
 
 function wireSheetExport() {
-  const exportBtn = document.getElementById('exportSheetBtn');
-  const exportMsg = document.getElementById('exportSheetMsg');
   const settingsToggle = document.getElementById('sheetSettingsToggle');
   const settingsPanel = document.getElementById('sheetSettingsPanel');
   const sheetUrlInput = document.getElementById('sheetUrlInput');
@@ -3184,50 +3181,47 @@ function wireSheetExport() {
     try {
       const snap = await dbApi.collection('settings').doc('main').get();
       return snap.exists ? snap.data() : {};
-    } catch (e) { console.error(e); return {}; }
-  }
-
-  settingsToggle.addEventListener('click', async () => {
-    const show = settingsPanel.style.display === 'none';
-    settingsPanel.style.display = show ? '' : 'none';
-    if (show) {
-      const s = await getSettings();
-      sheetUrlInput.value = s.sheetWebAppUrl || '';
-    }
-  });
-
-  saveBtn.addEventListener('click', async () => {
-    const url = sheetUrlInput.value.trim();
-    try {
-      await dbApi.collection('settings').doc('main').set({ sheetWebAppUrl: url });
-      sheetUrlMsg.className = 'msg ok'; sheetUrlMsg.textContent = 'Saved.';
-      setTimeout(() => { sheetUrlMsg.textContent = ''; }, 2000);
-    } catch (e) {
-      console.error(e); sheetUrlMsg.className = 'msg err'; sheetUrlMsg.textContent = 'Could not save.';
-    }
-  });
-
-  exportBtn.addEventListener('click', async () => {
-    exportMsg.textContent = '';
-    const s = await getSettings();
-    const url = s.sheetWebAppUrl;
-    if (!url) {
-      showToast('Ask an admin to set the Google Sheet URL first (⚙️ Sheet settings).');
-      return;
-    }
-    exportBtn.disabled = true;
-    exportMsg.className = 'msg'; exportMsg.textContent = 'Exporting…';
-    try {
-      const { added, updated } = await exportAllToSheet(url);
-      exportMsg.textContent = '';
-      showBigToast(`✅ Exported! ${added} new, ${updated} updated`);
     } catch (e) {
       console.error(e);
-      exportMsg.className = 'msg err'; exportMsg.textContent = 'Export failed.';
-      showToast('Could not reach the Google Sheet — check the URL and try again.');
+      return {};
     }
-    exportBtn.disabled = false;
-  });
+  }
+
+  if (settingsToggle) {
+    settingsToggle.addEventListener('click', async () => {
+      const show = settingsPanel.style.display === 'none';
+      settingsPanel.style.display = show ? '' : 'none';
+
+      if (show) {
+        const s = await getSettings();
+        sheetUrlInput.value = s.sheetWebAppUrl || '';
+      }
+    });
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const url = sheetUrlInput.value.trim();
+
+      try {
+        await dbApi.collection('settings').doc('main').set({
+          sheetWebAppUrl: url
+        });
+
+        sheetUrlMsg.className = 'msg ok';
+        sheetUrlMsg.textContent = 'Saved.';
+
+        setTimeout(() => {
+          sheetUrlMsg.textContent = '';
+        }, 2000);
+
+      } catch (e) {
+        console.error(e);
+        sheetUrlMsg.className = 'msg err';
+        sheetUrlMsg.textContent = 'Could not save.';
+      }
+    });
+  }
 }
 // ===============================
 // Visitor Camera
