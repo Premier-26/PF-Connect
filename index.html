@@ -2370,20 +2370,88 @@ function initUserManagement() {
   const panel = document.getElementById('userManagementPanel');
   const userManagementBtn = document.getElementById('userManagementBtn');
   const msg = document.getElementById('userManagementMsg');
+  const userList = document.getElementById('userList');
 
   if (!panel || !userManagementBtn) {
     console.error('User Management elements not found.');
     return;
   }
 
-  userManagementBtn.addEventListener('click', function () {
+  userManagementBtn.addEventListener('click', async function () {
     panel.style.display = 'block';
+    await loadUserList();
   });
 
   if (closeBtn) {
     closeBtn.addEventListener('click', function () {
       panel.style.display = 'none';
     });
+  }
+
+  async function loadUserList() {
+
+    if (!userList) return;
+
+    userList.innerHTML = 'Loading users...';
+
+    try {
+
+      const snap = await dbApi
+        .collection('users')
+        .get();
+
+      if (!snap || snap.empty) {
+        userList.innerHTML = '<div class="msg">No users found.</div>';
+        return;
+      }
+
+      let html = `
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:10px;">Username</th>
+                <th style="text-align:left; padding:10px;">Role</th>
+                <th style="text-align:left; padding:10px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      snap.forEach(doc => {
+
+        const user = doc.data();
+
+        html += `
+          <tr>
+            <td style="padding:10px; border-top:1px solid var(--line);">
+              ${user.username || doc.id}
+            </td>
+            <td style="padding:10px; border-top:1px solid var(--line);">
+              ${user.role || 'user'}
+            </td>
+            <td style="padding:10px; border-top:1px solid var(--line);">
+              ${user.active === false ? 'Inactive' : 'Active'}
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      userList.innerHTML = html;
+
+    } catch (error) {
+
+      console.error('Load user list error:', error);
+
+      userList.innerHTML =
+        '<div class="msg err">Unable to load users.</div>';
+    }
   }
 
   if (!createBtn) return;
@@ -2427,6 +2495,8 @@ function initUserManagement() {
       document.getElementById('newUsername').value = '';
       document.getElementById('newPassword').value = '';
       document.getElementById('newUserRole').value = 'user';
+
+      await loadUserList();
 
     } catch (error) {
 
