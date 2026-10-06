@@ -2386,10 +2386,10 @@ function initUserManagement() {
   const msg = document.getElementById('userManagementMsg');
   const userList = document.getElementById('userList');
 
-  if (!panel || !userManagementBtn) {
-    console.error('User Management elements not found.');
-    return;
-  }
+  if (!panel) {
+  console.error('User Management panel not found.');
+  return;
+}
 
   userManagementBtn.addEventListener('click', async function () {
     panel.style.display = 'block';
