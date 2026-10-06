@@ -190,6 +190,32 @@
     margin-bottom: 14px; letter-spacing: 0.02em;
   }
   .industrial-features-title { font-size: 1.7rem; font-weight: 800; color: #fff; margin-bottom: 16px; }
+    .pf-company-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 8px;
+    color: #cfc6b8;
+  }
+
+  .industrial-features-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .industrial-badge {
+    display: table;
+    margin: 0 auto;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
   .industrial-feature-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
   .industrial-feature-list li { font-size: 0.86rem; color: #cfc6b8; display: flex; align-items: flex-start; gap: 9px; }
   .industrial-feature-list .fchk {
@@ -336,18 +362,11 @@ document.addEventListener('DOMContentLoaded', function () {
 <body>
 <div class="login-overlay industrial-login" id="loginOverlay">
   <div class="industrial-split">
-    <div class="industrial-features">
-      <div class="industrial-badge">⚙ Proudly built in-house</div>
-      <div class="industrial-features-title">PF Connect</div>
-      <ul class="industrial-feature-list">
-        <li><span class="fchk">✓</span> Courier Inward Register with delivery confirmation</li>
-        <li><span class="fchk">✓</span> Gate Visitor Management — photo capture &amp; QR checkout</li>
-        <li><span class="fchk">✓</span> Vehicle Movement Tracking with MIS reporting</li>
-        <li><span class="fchk">✓</span> Security Patrol Monitoring with checkpoint QR scans</li>
-        <li><span class="fchk">✓</span> Role-based access for admins and staff</li>
-        <li><span class="fchk">✓</span> Google Sheet sync for every module</li>
-      </ul>
-    </div>
+  <div class="industrial-features">
+  <div class="pf-company-name">A Premier Foundry Product</div>
+  <div class="industrial-features-title">PF Connect</div>
+  <div class="industrial-badge">⚙ Proudly built in-house</div>
+</div>
     <div class="login-box industrial-box">
       <div class="industrial-topbar"></div>
       <div class="industrial-inner">
