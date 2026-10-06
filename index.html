@@ -1602,13 +1602,16 @@ async function initCapabilities() {
     downloadsApi = createLocalDownloads();
   }
 
-  try {
-    assetsApi = window.claude
-      ? await window.claude.use('assets')
-      : null;
-  } catch (e) {
-    assetsApi = null;
-  }
+try {
+  assetsApi = window.claude
+    ? await window.claude.use('assets')
+    : null;
+
+  console.log('PF Connect assetsApi:', assetsApi);
+} catch (e) {
+  console.error('PF Connect assets service error:', e);
+  assetsApi = null;
+}}
 
   // Initialize modules
   initCourier();
