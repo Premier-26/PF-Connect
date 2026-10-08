@@ -2301,49 +2301,45 @@ dbApi.collection('patternInwards')
   });
 
 
-  // WHATSAPP
-  whatsappBtn.addEventListener('click', function () {
+ // WHATSAPP
+whatsappBtn.addEventListener('click', async function () {
 
-    const patternNo =
-      document.getElementById('p-patternno').value.trim();
+  const patternNo =
+    document.getElementById('p-patternno').value.trim();
 
-    const component =
-      document.getElementById('p-component').value.trim();
+  const component =
+    document.getElementById('p-component').value.trim();
 
-    const customer =
-      document.getElementById('p-customer').value.trim();
+  const customer =
+    document.getElementById('p-customer').value.trim();
 
-    const date =
-      document.getElementById('p-date').value;
+  const date =
+    document.getElementById('p-date').value;
 
-    const time =
-      document.getElementById('p-time').value;
+  const time =
+    document.getElementById('p-time').value;
 
-    const courier =
-      document.getElementById('p-courier').value.trim();
+  const courier =
+    document.getElementById('p-courier').value.trim();
 
-    const qty =
-      document.getElementById('p-qty').value;
+  const qty =
+    document.getElementById('p-qty').value;
 
-    const receivedBy =
-      document.getElementById('p-receivedby').value.trim();
+  const receivedBy =
+    document.getElementById('p-receivedby').value.trim();
 
-    const remarks =
-      document.getElementById('p-remarks').value.trim();
+  const remarks =
+    document.getElementById('p-remarks').value.trim();
 
+  if (!patternNo || !component || !customer) {
+    alert(
+      'Please enter Pattern No., Component Name and Received From / Customer.'
+    );
+    return;
+  }
 
-    if (!patternNo || !component || !customer) {
-
-      alert(
-        'Please enter Pattern No., Component Name and Received From / Customer.'
-      );
-
-      return;
-    }
-
-
-    const message =
-`📦 *PATTERN INWARD – PF CONNECT*
+  const message =
+`📦 PATTERN INWARD – PF CONNECT
 
 🏷️ Pattern No.: ${patternNo}
 ⚙️ Component: ${component}
@@ -2359,42 +2355,24 @@ ${remarks || 'Nil'}
 
 📌 Status: Pattern Received`;
 
+  // COPY MESSAGE TO CLIPBOARD
+  try {
+    await navigator.clipboard.writeText(message);
+  } catch (e) {
+    console.error('Clipboard copy failed:', e);
+  }
 
-    /*
-     * Replace the numbers below with actual
-     * WhatsApp numbers.
-     *
-     * Format:
-     * 91 + 10 digit mobile number
-     */
+  // OPEN ONLY ONE WHATSAPP TAB
+  const url =
+    'https://web.whatsapp.com/send?text=' +
+    encodeURIComponent(message);
 
-    const recipients = [
-      '919XXXXXXXXX',
-      '919XXXXXXXXX',
-      '919XXXXXXXXX'
-    ];
+  window.open(url, '_blank');
 
-
-    recipients.forEach(function (phone, index) {
-
-      setTimeout(function () {
-
-        const url =
-          'https://wa.me/' +
-          phone +
-          '?text=' +
-          encodeURIComponent(message);
-
-        window.open(url, '_blank');
-
-      }, index * 1000);
-
-    });
-
-    });
+});
 
 }
-  async function sendPatternWhatsApp(id) {
+ async function sendPatternWhatsApp(id) {
   try {
     const snap = await dbApi.collection('patternInwards').doc(id).get();
 
@@ -2422,41 +2400,52 @@ ${d.remarks || 'Nil'}
 
 📌 Status: Pattern Received`;
 
-    // Copy message to clipboard
+    // 1. COPY MESSAGE FIRST
+    let copied = false;
+
     try {
       await navigator.clipboard.writeText(message);
+      copied = true;
     } catch (e) {
       console.error('Clipboard copy failed:', e);
+
+      // Fallback copy method
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = message;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        copied = document.execCommand('copy');
+        textarea.remove();
+      } catch (e2) {
+        console.error('Fallback clipboard copy failed:', e2);
+      }
     }
 
-    // Open WhatsApp
-    // If a phone number exists, open that person.
-    // Otherwise open WhatsApp so you can choose a group/person.
-    const phone = (
-      d.phone ||
-      d.mobile ||
-      d.contactNo ||
-      ''
-    ).replace(/[^0-9]/g, '');
-
-    const url = phone
-      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-      : `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    // 2. OPEN ONLY ONE WHATSAPP TAB
+    const url =
+      'https://web.whatsapp.com/send?text=' +
+      encodeURIComponent(message);
 
     window.open(url, '_blank');
 
-    alert(
-      phone
-        ? 'WhatsApp opened. The same message is also copied to clipboard.'
-        : 'WhatsApp opened. The message is copied to clipboard. Select the group/person and press Ctrl + V.'
-    );
+    // 3. INFORM USER
+    setTimeout(() => {
+      if (copied) {
+        showToast('WhatsApp opened. Message copied — press Ctrl + V in the group/person.');
+      } else {
+        showToast('WhatsApp opened, but clipboard copy failed.');
+      }
+    }, 500);
 
   } catch (e) {
     console.error('Pattern WhatsApp error:', e);
     alert('Could not prepare the WhatsApp message.');
   }
 }
-
 
 // USER MANAGEMENT
 function initUserManagement() {
