@@ -2394,6 +2394,68 @@ ${remarks || 'Nil'}
     });
 
 }
+  async function sendPatternWhatsApp(id) {
+  try {
+    const snap = await dbApi.collection('patternInwards').doc(id).get();
+
+    if (!snap.exists()) {
+      alert('Pattern Inward record not found.');
+      return;
+    }
+
+    const d = snap.data();
+
+    const message =
+`📦 PATTERN INWARD – PF CONNECT
+
+🏷️ Pattern No.: ${d.patternNo || '-'}
+⚙️ Component: ${d.component || '-'}
+🏢 Received From: ${d.customer || '-'}
+📅 Received Date: ${d.receivedDate || '-'}
+🕐 Received Time: ${d.receivedTime || '-'}
+🚚 Courier / Transport: ${d.courier || 'Nil'}
+🔢 Quantity: ${d.quantity || 1}
+👤 Received By: ${d.receivedBy || '-'}
+
+📝 Remarks:
+${d.remarks || 'Nil'}
+
+📌 Status: Pattern Received`;
+
+    // Copy message to clipboard
+    try {
+      await navigator.clipboard.writeText(message);
+    } catch (e) {
+      console.error('Clipboard copy failed:', e);
+    }
+
+    // Open WhatsApp
+    // If a phone number exists, open that person.
+    // Otherwise open WhatsApp so you can choose a group/person.
+    const phone = (
+      d.phone ||
+      d.mobile ||
+      d.contactNo ||
+      ''
+    ).replace(/[^0-9]/g, '');
+
+    const url = phone
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+      : `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+    window.open(url, '_blank');
+
+    alert(
+      phone
+        ? 'WhatsApp opened. The same message is also copied to clipboard.'
+        : 'WhatsApp opened. The message is copied to clipboard. Select the group/person and press Ctrl + V.'
+    );
+
+  } catch (e) {
+    console.error('Pattern WhatsApp error:', e);
+    alert('Could not prepare the WhatsApp message.');
+  }
+}
 
 
 // USER MANAGEMENT
