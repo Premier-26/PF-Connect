@@ -2363,11 +2363,11 @@ ${remarks || 'Nil'}
   }
 
   // OPEN ONLY ONE WHATSAPP TAB
-  const url =
-    'https://web.whatsapp.com/send?text=' +
-    encodeURIComponent(message);
+const url =
+  'whatsapp://send?text=' +
+  encodeURIComponent(message);
 
-  window.open(url, '_blank');
+window.location.href = url;
 
 });
 
